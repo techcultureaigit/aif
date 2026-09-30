@@ -1,0 +1,35 @@
+import { commitImport, previewImport, recentImports, type ImportKind } from "@/lib/admin-store";
+import { authorizeAdmin } from "@/lib/admin-guard";
+import { asRecord, jsonError, readJson } from "@/lib/http";
+
+function kind(value: unknown): ImportKind | null {
+  return value === "ledger" || value === "holdings" ? value : null;
+}
+
+export async function GET() {
+  const auth = await authorizeAdmin("admin", "imports");
+  if (auth.response) return auth.response;
+  return Response.json({ imports: recentImports() });
+}
+
+export async function POST(request: Request) {
+  const auth = await authorizeAdmin("admin", "imports");
+  if (auth.response) return auth.response;
+  const body = asRecord(await readJson(request));
+  const type = kind(body?.type);
+  const csv = typeof body?.csv === "string" ? body.csv : "";
+  const step = body?.step === "commit" ? "commit" : "preview";
+  if (!type || !csv.trim()) return jsonError("Choose an import type and a CSV file.", 400);
+
+  if (step === "preview") {
+    const rows = previewImport(type, csv);
+    return Response.json({
+      rows,
+      valid: rows.filter((row) => row.ok).length,
+      failed: rows.filter((row) => !row.ok).length,
+    });
+  }
+
+  const fileName = typeof body?.fileName === "string" ? body.fileName : `${type}.csv`;
+  return Response.json(commitImport(auth.user.name, type, fileName, csv));
+}
