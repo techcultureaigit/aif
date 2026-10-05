@@ -10,6 +10,7 @@ import {
   useState,
 } from "react";
 import ToastViewport from "@/components/ui/ToastViewport";
+import { api, apiFetch } from "@/config/endapi";
 import type { SessionUser } from "@/lib/types";
 
 type Toast = {
@@ -43,7 +44,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     let active = true;
-    fetch("/api/auth/session")
+    apiFetch(api.auth.session)
       .then(async (response) => {
         if (!response.ok) throw new Error("session");
         return (await response.json()) as { user: SessionUser | null };
@@ -91,7 +92,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const login = useCallback(async (identifier: string, password: string) => {
     try {
-      const response = await fetch("/api/auth/login", {
+      const response = await apiFetch(api.auth.login, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ identifier, password }),
@@ -121,7 +122,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const logout = useCallback(async (reason: "manual" | "idle" = "manual") => {
     try {
-      await fetch("/api/auth/logout", { method: "POST" });
+      await apiFetch(api.auth.logout, { method: "POST" });
     } catch {
       // The local session still ends if the request fails.
     }

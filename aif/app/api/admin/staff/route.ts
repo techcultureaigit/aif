@@ -5,7 +5,7 @@ import { asRecord, jsonError, readJson } from "@/lib/http";
 export async function GET() {
   const auth = await authorizeAdmin("superadmin");
   if (auth.response) return auth.response;
-  return Response.json({ staff: listStaff() });
+  return Response.json({ staff: await listStaff() });
 }
 
 export async function POST(request: Request) {
@@ -19,7 +19,7 @@ export async function POST(request: Request) {
   if (!name || !email || password.length < 6) {
     return jsonError("Name, email, and a password of at least 6 characters are required.", 400);
   }
-  const result = createStaff(auth.user.name, { name, email, role, password });
+  const result = await createStaff(auth.user.name, { name, email, role, password });
   if ("error" in result && result.error) return jsonError(result.error, 409);
   return Response.json(result);
 }

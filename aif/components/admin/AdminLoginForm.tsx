@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
+import { api, apiFetch } from "@/config/endapi";
 import { inputClass, labelClass, primaryButtonClass } from "@/components/ui/classes";
 
 export default function AdminLoginForm() {
@@ -14,7 +15,7 @@ export default function AdminLoginForm() {
     setPending(true);
     setError(null);
     const form = new FormData(event.currentTarget);
-    const response = await fetch("/api/admin/login", {
+    const response = await apiFetch(api.admin.login, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

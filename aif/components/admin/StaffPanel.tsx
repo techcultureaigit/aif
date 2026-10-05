@@ -2,23 +2,23 @@
 
 import { FormEvent, useState } from "react";
 import LoadError from "@/components/ui/LoadError";
-import PageHeader from "@/components/ui/PageHeader";
 import Skeleton from "@/components/ui/Skeleton";
 import StatusBadge from "@/components/ui/StatusBadge";
 import { inputClass, labelClass, primaryButtonClass } from "@/components/ui/classes";
+import { api, apiFetch } from "@/config/endapi";
 import { usePortalResource } from "@/lib/use-portal-resource";
 import type { AdminUser } from "@/lib/types";
 
 type Person = AdminUser & { status: "active" | "suspended" };
 
 export default function StaffPanel() {
-  const { data, status, reload } = usePortalResource<{ staff: Person[] }>("/api/admin/staff");
+  const { data, status, reload } = usePortalResource<{ staff: Person[] }>(api.admin.staff);
   const [message, setMessage] = useState<string | null>(null);
   const [pending, setPending] = useState<Person | null>(null);
   const [editing, setEditing] = useState<Person | null>(null);
 
   async function setAccountStatus(person: Person, next: "active" | "suspended") {
-    const response = await fetch(`/api/admin/staff/${person.id}`, {
+    const response = await apiFetch(api.admin.staffMember(person.id), {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status: next }),
@@ -33,7 +33,7 @@ export default function StaffPanel() {
     event.preventDefault();
     if (!editing) return;
     const fields = Object.fromEntries(new FormData(event.currentTarget).entries());
-    const response = await fetch(`/api/admin/staff/${editing.id}`, {
+    const response = await apiFetch(api.admin.staffMember(editing.id), {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name: fields.name, role: fields.role }),
@@ -47,7 +47,7 @@ export default function StaffPanel() {
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
-    const response = await fetch("/api/admin/staff", {
+    const response = await apiFetch(api.admin.staff, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(Object.fromEntries(new FormData(form).entries())),
@@ -63,7 +63,6 @@ export default function StaffPanel() {
   if (status === "error") {
     return (
       <div className="w-full">
-        <PageHeader title="Staff directory" description="Super admin access is required for staff accounts." />
         <LoadError onRetry={reload} />
       </div>
     );
@@ -71,7 +70,6 @@ export default function StaffPanel() {
 
   return (
     <div className="w-full">
-        <PageHeader title="Staff directory" description="Create, edit, activate, or suspend internal admin accounts." />
       {status === "loading" ? <Skeleton className="h-40" /> : null}
       {status === "ready" ? (
         <div className="overflow-x-auto rounded-2xl border border-border bg-white shadow-[0_10px_24px_rgba(20,50,90,0.05)]">

@@ -36,7 +36,7 @@ export default async function Footer() {
         />
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-[#071833]/78 via-[#0c2748]/62 to-[#16375c]/48" />
 
-        <div className="relative grid gap-10 px-6 py-9 sm:px-8 lg:grid-cols-4 lg:gap-8 lg:px-10 lg:py-10">
+        <div className="footer-grid relative grid gap-10 px-6 py-9 sm:px-8 lg:grid-cols-4 lg:gap-8 lg:px-10 lg:py-10">
           <div>
             <span className="inline-flex items-center gap-2 font-semibold">
               {logoSrc ? (
@@ -54,10 +54,10 @@ export default async function Footer() {
               ) : null}
               {showName ? <span>{app.name}</span> : null}
             </span>
-            <p className="mt-5 max-w-[220px] text-sm leading-6 text-white/75">
+            <p className="footer-blurb mt-5 max-w-[220px] text-sm leading-6 text-white/75">
               Your trusted partner in wealth management. Secure. Transparent. Always with you.
             </p>
-            <div className="mt-5 flex gap-2.5">
+            <div className="footer-social mt-5 flex gap-2.5">
               <Social label="LinkedIn">
                 <LinkedInIcon />
               </Social>
@@ -102,7 +102,7 @@ export default async function Footer() {
           </FooterColumn>
         </div>
 
-        <div className="relative flex flex-col gap-3 border-t border-white/15 px-6 py-4 text-xs text-white/75 sm:flex-row sm:items-center sm:justify-between sm:px-8 lg:px-10">
+        <div className="footer-bar relative flex flex-col gap-3 border-t border-white/15 px-6 py-4 text-xs text-white/75 sm:flex-row sm:items-center sm:justify-between sm:px-8 lg:px-10">
           <p>© {year} Wealth Discovery Capital. All rights reserved.</p>
           <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
             <span className="inline-flex items-center gap-1.5 text-[#3ddc97]">
@@ -125,7 +125,7 @@ function FooterColumn({ title, children }: { title: string; children: ReactNode 
     <div>
       <h2 className="text-xs font-semibold uppercase tracking-wide text-white">{title}</h2>
       <span className="mt-2 block h-[3px] w-8 rounded-full bg-[#3ddc97]" />
-      <div className="mt-4 flex flex-col gap-3">{children}</div>
+      <div className="footer-links mt-4 flex flex-col gap-3">{children}</div>
     </div>
   );
 }

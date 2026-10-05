@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import AdminDashboard from "@/components/admin/AdminDashboard";
 import SuperCommand from "@/components/admin/SuperCommand";
+import { api, apiFetch } from "@/config/endapi";
 import type { AdminUser } from "@/lib/types";
 
 export default function AdminHome() {
@@ -10,7 +11,7 @@ export default function AdminHome() {
 
   useEffect(() => {
     let active = true;
-    fetch("/api/admin/session")
+    apiFetch(api.admin.session)
       .then(async (response) => (await response.json()) as { user: AdminUser | null })
       .then((data) => {
         if (active) setUser(data.user);

@@ -13,21 +13,21 @@ export async function POST(request: Request) {
     return jsonError("Enter your mobile or email and password.", 400);
   }
 
-  const account = authenticate(identifier, password);
+  const account = await authenticate(identifier, password);
   if (account) {
     const clientCode = account.portal.profile.tradingCode;
     await openSession(clientCode);
-    return Response.json({ user: toSessionUser(clientCode), destination: "/dashboard" });
+    return Response.json({ user: await toSessionUser(clientCode), destination: "/dashboard" });
   }
 
   const canonical = canonicalIdentifier(identifier);
   if (canonical?.kind === "email") {
-    const staff = authenticateStaff(canonical.value, password);
+    const staff = await authenticateStaff(canonical.value, password);
     if (staff === "suspended") {
       return jsonError("This staff account is suspended.", 403);
     }
     if (staff) {
-      noteStaffLogin(staff);
+      await noteStaffLogin(staff);
       await openAdminSession(staff.id, staff.role, staff.version);
       return Response.json({ destination: "/admin" });
     }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { apiFetch } from "@/config/endapi";
 
 export function usePortalResource<T>(url: string) {
   const [data, setData] = useState<T | null>(null);
@@ -10,7 +11,7 @@ export function usePortalResource<T>(url: string) {
   useEffect(() => {
     let active = true;
 
-    fetch(url)
+    apiFetch(url)
       .then(async (response) => {
         if (!response.ok) throw new Error("Request failed");
         return (await response.json()) as T;

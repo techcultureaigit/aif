@@ -11,6 +11,7 @@ import {
   secondaryButtonClass,
 } from "@/components/ui/classes";
 import { useApp } from "@/context/AppProvider";
+import { api, apiFetch } from "@/config/endapi";
 import { passwordError } from "@/lib/password";
 
 type Step = "identify" | "otp" | "reset" | "done";
@@ -31,7 +32,7 @@ export default function ForgotPasswordForm() {
   }, [ready, user, router]);
 
   async function post(url: string, body: object) {
-    const response = await fetch(url, {
+    const response = await apiFetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
@@ -48,7 +49,7 @@ export default function ForgotPasswordForm() {
     setPending(true);
     setError(null);
     const form = new FormData(event.currentTarget);
-    const result = await post("/api/auth/forgot", {
+    const result = await post(api.auth.forgot, {
       identifier: String(form.get("identifier") ?? ""),
     });
     setPending(false);
@@ -65,7 +66,7 @@ export default function ForgotPasswordForm() {
     setPending(true);
     setError(null);
     const form = new FormData(event.currentTarget);
-    const result = await post("/api/auth/verify-otp", {
+    const result = await post(api.auth.verifyOtp, {
       code: String(form.get("code") ?? ""),
     });
     setPending(false);
@@ -93,7 +94,7 @@ export default function ForgotPasswordForm() {
 
     setPending(true);
     setError(null);
-    const result = await post("/api/auth/reset", { password });
+    const result = await post(api.auth.reset, { password });
     setPending(false);
     if (!result.ok) {
       setError(result.data.message ?? "The password could not be updated.");

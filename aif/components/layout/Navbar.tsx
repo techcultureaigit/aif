@@ -38,8 +38,8 @@ export default function Navbar({
                 href={link.href}
                 className={
                   onHome
-                    ? `inline-flex items-center gap-1.5 rounded-full bg-white/90 px-3.5 py-2 text-sm font-semibold text-[#12357a] shadow-[0_4px_16px_rgba(8,24,56,0.18)] ${
-                        active ? "underline decoration-2 underline-offset-[6px] decoration-[#2456c8]" : ""
+                    ? `inline-flex items-center gap-1.5 rounded-full bg-white/90 px-3.5 py-2 text-sm font-semibold text-[#1B3C6C] shadow-[0_4px_16px_rgba(8,24,56,0.18)] ${
+                        active ? "underline decoration-2 underline-offset-[6px] decoration-[#2E5FA5]" : ""
                       }`
                     : linkClass(active)
                 }
@@ -70,7 +70,7 @@ export default function Navbar({
 }
 
 const homeLoginClass =
-  "inline-flex items-center gap-2 rounded-full bg-[#2456c8] px-4 py-2 text-sm font-medium text-white hover:bg-[#1d4bb3]";
+  "inline-flex items-center gap-2 rounded-full bg-[#2E5FA5] px-4 py-2 text-sm font-medium text-white hover:bg-[#1B3C6C]";
 
 function HouseIcon() {
   return (

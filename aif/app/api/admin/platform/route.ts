@@ -11,7 +11,7 @@ import { asRecord, jsonError, readJson } from "@/lib/http";
 export async function GET() {
   const auth = await authorizeAdmin("superadmin");
   if (auth.response) return auth.response;
-  return Response.json(platformState());
+  return Response.json(await platformState());
 }
 
 export async function POST(request: Request) {
@@ -27,14 +27,14 @@ export async function POST(request: Request) {
     if (!endpoint || !token || !Number.isFinite(timeoutSeconds)) {
       return jsonError("Endpoint, token, and timeout are required.", 400);
     }
-    return Response.json({ kra: saveKra(auth.user, { endpoint, token, timeoutSeconds }) });
+    return Response.json({ kra: await saveKra(auth.user, { endpoint, token, timeoutSeconds }) });
   }
 
   if (action === "security") {
     const identifier = typeof body?.identifier === "string" ? body.identifier : "";
     const name = typeof body?.name === "string" ? body.name : "";
     const isin = typeof body?.isin === "string" ? body.isin : "";
-    const saved = addSecurity(auth.user, { identifier, name, isin });
+    const saved = await addSecurity(auth.user, { identifier, name, isin });
     if (!saved) return jsonError("Identifier and name are required.", 400);
     return Response.json({ security: saved });
   }
@@ -46,7 +46,7 @@ export async function POST(request: Request) {
     const target = typeof body?.target === "string" ? body.target : "all-active";
     const retries = Number(body?.retries);
     return Response.json({
-      schedule: saveSchedule(auth.user, {
+      schedule: await saveSchedule(auth.user, {
         frequency,
         target,
         retries: Number.isFinite(retries) ? retries : 1,
@@ -65,7 +65,7 @@ export async function POST(request: Request) {
     if (!clientCode || !date || !narration || !reason || !Number.isFinite(amount) || amount <= 0) {
       return jsonError("Client, date, amount, narration, and reason are required.", 400);
     }
-    const result = overrideLedger(auth.user, { clientCode, date, type, amount, narration, reason });
+    const result = await overrideLedger(auth.user, { clientCode, date, type, amount, narration, reason });
     if (!result) return jsonError("Client not found.", 404);
     return Response.json(result);
   }

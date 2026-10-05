@@ -5,7 +5,7 @@ import { asRecord, jsonError, readJson } from "@/lib/http";
 export async function GET() {
   const auth = await authorizeAdmin("admin", "reports");
   if (auth.response) return auth.response;
-  return Response.json({ runs: statementRuns() });
+  return Response.json({ runs: await statementRuns() });
 }
 
 export async function POST(request: Request) {
@@ -20,7 +20,7 @@ export async function POST(request: Request) {
   if (!clientCode || !statementType || !period) {
     return jsonError("Choose a client, statement type, and period.", 400);
   }
-  const run = queueStatement({
+  const run = await queueStatement({
     actor: auth.user.name,
     clientCode,
     statementType,

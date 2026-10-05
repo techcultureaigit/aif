@@ -1,3 +1,5 @@
+import { api, apiFetch } from "@/config/endapi";
+
 export function downloadBlob(fileName: string, blob: Blob) {
   const url = URL.createObjectURL(blob);
   const anchor = document.createElement("a");
@@ -10,7 +12,7 @@ export function downloadBlob(fileName: string, blob: Blob) {
 }
 
 export async function loadStatementFile(id: string) {
-  const response = await fetch(`/api/portal/statements/${id}`);
+  const response = await apiFetch(api.portal.statement(id));
   if (!response.ok) {
     throw new Error("Statement download failed.");
   }

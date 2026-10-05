@@ -2,9 +2,9 @@
 
 import { FormEvent, useState } from "react";
 import LoadError from "@/components/ui/LoadError";
-import PageHeader from "@/components/ui/PageHeader";
 import Skeleton from "@/components/ui/Skeleton";
 import { formatDate } from "@/lib/format";
+import { api } from "@/config/endapi";
 import { usePortalResource } from "@/lib/use-portal-resource";
 
 type Entry = {
@@ -25,7 +25,7 @@ export default function AuditPanel() {
   const [entity, setEntity] = useState("");
   const [query, setQuery] = useState("");
   const { data, status, reload } = usePortalResource<{ audit: Entry[] }>(
-    `/api/admin/audit${query ? `?${query}` : ""}`,
+    `${api.admin.audit}${query ? `?${query}` : ""}`,
   );
 
   function applyFilters(event: FormEvent<HTMLFormElement>) {
@@ -39,7 +39,6 @@ export default function AuditPanel() {
 
   return (
     <div className="w-full">
-      <PageHeader eyebrow="Audit" title="Audit trail" description="Filter high-privilege actions by person, action, and the record that changed." />
       <form onSubmit={applyFilters} className="mb-4 flex flex-wrap gap-3 rounded-2xl border border-border bg-white p-4 shadow-[0_10px_24px_rgba(20,50,90,0.05)]">
         <input value={actor} onChange={(event) => setActor(event.target.value)} placeholder="User or name" className="rounded-xl border border-border bg-white px-3 py-2 text-sm" />
         <input value={action} onChange={(event) => setAction(event.target.value)} placeholder="Action" className="rounded-xl border border-border bg-white px-3 py-2 text-sm" />

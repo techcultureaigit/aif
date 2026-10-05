@@ -3,7 +3,6 @@
 import { useMemo, useState } from "react";
 import EmptyState from "@/components/ui/EmptyState";
 import LoadError from "@/components/ui/LoadError";
-import PortalBanner from "@/components/ui/PortalBanner";
 import Skeleton from "@/components/ui/Skeleton";
 import StatusBadge from "@/components/ui/StatusBadge";
 import {
@@ -12,6 +11,7 @@ import {
 } from "@/components/ui/classes";
 import { downloadBlob } from "@/lib/files";
 import { formatDate, formatInr } from "@/lib/format";
+import { api } from "@/config/endapi";
 import { usePortalResource } from "@/lib/use-portal-resource";
 import type { LedgerRow } from "@/lib/types";
 
@@ -43,7 +43,7 @@ function creditAmount(row: LedgerRow) {
 }
 
 export default function LedgerTable() {
-  const { data, status, reload } = usePortalResource<LedgerResponse>("/api/portal/ledger");
+  const { data, status, reload } = usePortalResource<LedgerResponse>(api.portal.ledger);
   const [start, setStart] = useState("");
   const [end, setEnd] = useState("");
 
@@ -110,12 +110,6 @@ export default function LedgerTable() {
 
   return (
     <div className="w-full">
-      <PortalBanner
-        eyebrow="Capital account"
-        title="Ledger"
-        description="Debit and credit entries on your capital account, with a running balance."
-      />
-
       {status === "loading" ? (
         <div className="space-y-3" aria-busy="true">
           <Skeleton className="h-16" />

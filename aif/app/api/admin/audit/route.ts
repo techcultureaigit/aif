@@ -6,7 +6,7 @@ export async function GET(request: Request) {
   if (auth.response) return auth.response;
   const url = new URL(request.url);
   return Response.json({
-    audit: listAudit({
+    audit: await listAudit({
       actor: url.searchParams.get("actor") ?? "",
       action: url.searchParams.get("action") ?? "",
       entity: url.searchParams.get("entity") ?? "",

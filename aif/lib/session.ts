@@ -1,6 +1,5 @@
-import "server-only";
 import { createHash, createHmac, randomInt, timingSafeEqual } from "crypto";
-import { cookies } from "next/headers";
+import { requestContext, type CookieJar } from "@/lib/request-context";
 import { getPasswordVersion } from "@/lib/portal-store";
 
 const SESSION_COOKIE = "aif_session";
@@ -30,6 +29,13 @@ function cookieOptions(maxAge: number) {
     path: "/",
     maxAge,
   };
+}
+
+async function readCookies(): Promise<CookieJar> {
+  const current = requestContext.getStore();
+  if (current) return current;
+  const { cookies } = await import("next/headers");
+  return cookies();
 }
 
 function signToken(payload: TokenPayload) {
@@ -67,9 +73,9 @@ function readToken(token: string | undefined): TokenPayload | null {
 }
 
 export async function openSession(clientCode: string) {
-  const passwordVersion = getPasswordVersion(clientCode);
+  const passwordVersion = await getPasswordVersion(clientCode);
   if (passwordVersion === null) return;
-  const cookieStore = await cookies();
+  const cookieStore = await readCookies();
   cookieStore.set(
     SESSION_COOKIE,
     signToken({
@@ -82,7 +88,7 @@ export async function openSession(clientCode: string) {
 }
 
 export async function clearSession() {
-  const cookieStore = await cookies();
+  const cookieStore = await readCookies();
   cookieStore.delete(SESSION_COOKIE);
 }
 
@@ -91,7 +97,7 @@ export async function openAdminSession(
   role: "admin" | "superadmin",
   passwordVersion: number,
 ) {
-  const cookieStore = await cookies();
+  const cookieStore = await readCookies();
   cookieStore.set(
     SESSION_COOKIE,
     signToken({
@@ -105,7 +111,7 @@ export async function openAdminSession(
 }
 
 export async function readAdminSession() {
-  const cookieStore = await cookies();
+  const cookieStore = await readCookies();
   const payload = readToken(cookieStore.get(SESSION_COOKIE)?.value);
   if (!payload || typeof payload.staffId !== "string") return null;
   if (payload.role !== "admin" && payload.role !== "superadmin") return null;
@@ -118,11 +124,11 @@ export async function readAdminSession() {
 }
 
 export async function readSession() {
-  const cookieStore = await cookies();
+  const cookieStore = await readCookies();
   const payload = readToken(cookieStore.get(SESSION_COOKIE)?.value);
   if (!payload || typeof payload.clientCode !== "string") return null;
   if (typeof payload.passwordVersion !== "number") return null;
-  const version = getPasswordVersion(payload.clientCode);
+  const version = await getPasswordVersion(payload.clientCode);
   if (version === null || version !== payload.passwordVersion) return null;
   return { clientCode: payload.clientCode };
 }
@@ -136,7 +142,7 @@ export function createDemoCode() {
 }
 
 export async function startReset(clientCode: string, code: string) {
-  const cookieStore = await cookies();
+  const cookieStore = await readCookies();
   cookieStore.set(
     RESET_COOKIE,
     signToken({
@@ -150,7 +156,7 @@ export async function startReset(clientCode: string, code: string) {
 }
 
 export async function verifyResetCode(code: string) {
-  const cookieStore = await cookies();
+  const cookieStore = await readCookies();
   const payload = readToken(cookieStore.get(RESET_COOKIE)?.value);
   if (!payload || payload.verified !== false) return null;
   if (typeof payload.clientCode !== "string" || typeof payload.otpHash !== "string") {
@@ -178,7 +184,7 @@ export async function verifyResetCode(code: string) {
 }
 
 export async function readVerifiedReset() {
-  const cookieStore = await cookies();
+  const cookieStore = await readCookies();
   const payload = readToken(cookieStore.get(RESET_COOKIE)?.value);
   if (!payload || payload.verified !== true) return null;
   if (typeof payload.clientCode !== "string") return null;
@@ -186,6 +192,6 @@ export async function readVerifiedReset() {
 }
 
 export async function clearReset() {
-  const cookieStore = await cookies();
+  const cookieStore = await readCookies();
   cookieStore.delete(RESET_COOKIE);
 }

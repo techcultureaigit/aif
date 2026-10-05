@@ -13,7 +13,7 @@ export default function PageHeader({
 }) {
   return (
     <section
-      className="mb-6 flex flex-col gap-4 overflow-hidden rounded-3xl px-6 py-6 text-[var(--pm-banner-text)] shadow-[0_16px_40px_rgba(79,70,229,0.22)] sm:flex-row sm:items-center sm:justify-between"
+      className="mb-6 flex flex-col gap-4 overflow-hidden rounded-3xl px-6 py-6 text-[var(--pm-banner-text)] shadow-[0_16px_40px_rgba(9,28,55,0.22)] sm:flex-row sm:items-center sm:justify-between"
       style={{ background: "linear-gradient(90deg, var(--pm-banner-from), var(--pm-banner-via), var(--pm-banner-to))" }}
     >
       <div>

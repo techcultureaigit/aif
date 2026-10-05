@@ -16,7 +16,7 @@ export async function PATCH(
     body.role === "admin" || body.role === "superadmin" ? body.role : undefined;
   const status = body.status === "active" || body.status === "suspended" ? body.status : undefined;
   const name = typeof body.name === "string" ? body.name : undefined;
-  const result = updateStaff(auth.user, id, { name, role, status });
+  const result = await updateStaff(auth.user, id, { name, role, status });
   if ("error" in result && result.error) return jsonError(result.error, 400);
   return Response.json(result);
 }

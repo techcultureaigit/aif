@@ -1,4 +1,3 @@
-import "server-only";
 import { formatDate, formatInrPlain } from "@/lib/format";
 import { buildPdf } from "@/lib/pdf";
 import type { PortalData, StatementMeta } from "@/lib/types";

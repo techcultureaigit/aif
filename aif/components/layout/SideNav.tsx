@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import Logo, { type BrandDisplay } from "@/components/layout/Logo";
 import { useApp } from "@/context/AppProvider";
@@ -20,13 +20,7 @@ export default function SideNav({
   brand: { name: string; logo: string; display: BrandDisplay };
 }) {
   const pathname = usePathname();
-  const router = useRouter();
-  const { user, sidebarOpen, setSidebarOpen, logout } = useApp();
-
-  async function handleLogout() {
-    await logout("manual");
-    router.push("/login");
-  }
+  const { sidebarOpen, setSidebarOpen } = useApp();
 
   return (
     <>
@@ -88,32 +82,12 @@ export default function SideNav({
             );
           })}
         </nav>
-        <div className="p-3">
-          {user ? (
-            <p className="px-3 pb-2 text-xs text-[var(--pm-portal-sidebar-muted)]">
-              {user.name}
-              <span className="mt-0.5 block font-medium text-[var(--pm-portal-sidebar-text)]">
-                {user.clientCode}
-              </span>
-            </p>
-          ) : null}
-          <button
-            type="button"
-            onClick={() => void handleLogout()}
-            className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm text-[var(--pm-portal-sidebar-text)] hover:bg-[var(--pm-portal-page)]"
-          >
-            <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--pm-portal-page)]">
-              <NavIcon name="logout" />
-            </span>
-            Log out
-          </button>
-        </div>
       </aside>
     </>
   );
 }
 
-function NavIcon({ name }: { name: "chart" | "user" | "list" | "grid" | "doc" | "logout" }) {
+function NavIcon({ name }: { name: "chart" | "user" | "list" | "grid" | "doc" }) {
   const common = {
     viewBox: "0 0 24 24",
     className: "h-4 w-4",
@@ -153,12 +127,6 @@ function NavIcon({ name }: { name: "chart" | "user" | "list" | "grid" | "doc" | 
       <>
         <path d="M8 3h6l5 5v13a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" />
         <path d="M14 3v5h5M9 13h6M9 17h4" strokeLinecap="round" />
-      </>
-    ),
-    logout: (
-      <>
-        <path d="M10 7V5a2 2 0 0 1 2-2h7v18h-7a2 2 0 0 1-2-2v-2" strokeLinecap="round" />
-        <path d="M4 12h10M11 9l3 3-3 3" strokeLinecap="round" strokeLinejoin="round" />
       </>
     ),
   };

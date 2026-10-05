@@ -6,10 +6,10 @@ import { useApp } from "@/context/AppProvider";
 export default function HomeActions() {
   const { user, ready } = useApp();
 
-  if (!ready) return <div className="mt-8 h-11" />;
+  if (!ready) return <div className="mt-4 h-10" />;
 
   return (
-    <div className="mt-8">
+    <div className="mt-4">
       <Link
         href={user ? "/dashboard" : "/login"}
         className="inline-flex items-center gap-2 rounded-full bg-[#2456c8] px-5 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-[#1d4bb3]"

@@ -1,5 +1,3 @@
-import "server-only";
-
 function ascii(value: string) {
   return value.replace(/[^\x20-\x7E]/g, " ");
 }

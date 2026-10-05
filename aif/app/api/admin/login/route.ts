@@ -10,11 +10,11 @@ export async function POST(request: Request) {
     return jsonError("Enter the admin email and password.", 400);
   }
 
-  const account = authenticateStaff(email, password);
+  const account = await authenticateStaff(email, password);
   if (account === "suspended") return jsonError("This staff account is suspended.", 403);
   if (!account) return jsonError("Email or password is incorrect.", 401);
 
-  noteStaffLogin(account);
+  await noteStaffLogin(account);
   await openAdminSession(account.id, account.role, account.version);
-  return Response.json({ user: toAdminUser(account.id) });
+  return Response.json({ user: await toAdminUser(account.id) });
 }

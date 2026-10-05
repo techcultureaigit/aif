@@ -63,11 +63,11 @@ export default function LoginAside() {
             className="animate-login-rise flex gap-3 rounded-2xl border border-white bg-white p-3 text-foreground shadow-[0_10px_28px_rgba(8,24,56,0.18)]"
             style={{ animationDelay: `${240 + index * 90}ms` }}
           >
-            <span className="animate-login-float mt-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#e8eefc] text-[#12357a]">
+            <span className="animate-login-float mt-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#EBF2F8] text-[#1B3C6C]">
               {point.icon}
             </span>
             <span>
-              <span className="block text-sm font-semibold text-[#12357a]">{point.title}</span>
+              <span className="block text-sm font-semibold text-[#1B3C6C]">{point.title}</span>
               <span className="mt-0.5 block text-sm text-slate-600">{point.text}</span>
             </span>
           </li>

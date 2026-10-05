@@ -5,8 +5,8 @@ import { readAdminSession } from "@/lib/session";
 export async function GET() {
   const session = await readAdminSession();
   if (!session) return Response.json({ user: null });
-  if (staffVersion(session.staffId) !== session.passwordVersion) {
+  if ((await staffVersion(session.staffId)) !== session.passwordVersion) {
     return Response.json({ user: null });
   }
-  return Response.json({ user: toAdminUser(session.staffId) });
+  return Response.json({ user: await toAdminUser(session.staffId) });
 }

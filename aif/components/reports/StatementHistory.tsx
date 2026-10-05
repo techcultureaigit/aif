@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useState } from "react";
 import EmptyState from "@/components/ui/EmptyState";
 import LoadError from "@/components/ui/LoadError";
-import PortalBanner from "@/components/ui/PortalBanner";
 import Skeleton from "@/components/ui/Skeleton";
 import {
   primaryButtonClass,
@@ -12,6 +11,7 @@ import {
 import { useApp } from "@/context/AppProvider";
 import { downloadBlob, loadStatementFile } from "@/lib/files";
 import { formatDate } from "@/lib/format";
+import { api } from "@/config/endapi";
 import { usePortalResource } from "@/lib/use-portal-resource";
 import type { StatementMeta } from "@/lib/types";
 
@@ -29,7 +29,7 @@ type Preview = {
 export default function StatementHistory() {
   const { pushToast } = useApp();
   const { data, status, reload } = usePortalResource<StatementResponse>(
-    "/api/portal/statements",
+    api.portal.statements,
   );
   const [busyId, setBusyId] = useState<string | null>(null);
   const [preview, setPreview] = useState<Preview | null>(null);
@@ -75,12 +75,6 @@ export default function StatementHistory() {
 
   return (
     <div className="w-full">
-      <PortalBanner
-        eyebrow="Reports"
-        title="Statements"
-        description="Historical investor statements for your account. Download a PDF or open it here."
-      />
-
       {status === "loading" ? (
         <div className="space-y-3" aria-busy="true">
           <Skeleton className="h-20" />

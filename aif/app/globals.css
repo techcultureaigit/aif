@@ -91,9 +91,24 @@ body::-webkit-scrollbar,
   height: 0;
 }
 
+html {
+  color-scheme: light;
+}
+
 body {
   background: var(--pm-background);
   color: var(--pm-text);
   font-family: var(--pm-font-sans), system-ui, sans-serif;
   font-size: var(--pm-text-base);
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+select:-webkit-autofill {
+  -webkit-text-fill-color: var(--pm-text);
+  caret-color: var(--pm-text);
+  box-shadow: 0 0 0 1000px #f8fafc inset;
+  transition: background-color 9999s ease-out;
 }

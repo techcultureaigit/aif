@@ -1,10 +1,10 @@
 "use client";
 
 import LoadError from "@/components/ui/LoadError";
-import PageHeader from "@/components/ui/PageHeader";
 import Skeleton from "@/components/ui/Skeleton";
 import StatusBadge from "@/components/ui/StatusBadge";
 import { formatDate, formatInr } from "@/lib/format";
+import { api } from "@/config/endapi";
 import { usePortalResource } from "@/lib/use-portal-resource";
 
 type Overview = {
@@ -18,15 +18,10 @@ type Overview = {
 };
 
 export default function AdminDashboard() {
-  const { data, status, reload } = usePortalResource<Overview>("/api/admin/overview");
+  const { data, status, reload } = usePortalResource<Overview>(api.admin.overview);
 
   return (
     <div className="w-full">
-      <PageHeader
-        eyebrow="Operations"
-        title="Admin dashboard"
-        description="Operational counts, compliance alerts, recent imports, and statement runs."
-      />
       {status === "loading" ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 6 }, (_, index) => (

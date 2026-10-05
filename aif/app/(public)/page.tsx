@@ -44,7 +44,7 @@ export default function HomePage() {
 
   return (
     <div className="flex flex-1 flex-col">
-      <div className="flex w-full flex-1 flex-col px-6 pb-8 pt-8 sm:px-8 sm:pt-14 lg:px-10">
+      <div className="flex w-full flex-1 flex-col px-6 pb-4 pt-3 sm:px-8 sm:pt-4 lg:px-10">
         <div>
           <p className="text-xs font-semibold tracking-[0.16em] text-white drop-shadow-[0_1px_6px_rgba(8,24,56,0.55)]">
             AIF CLIENT PORTAL <span aria-hidden="true">—</span>
@@ -52,39 +52,37 @@ export default function HomePage() {
           <TypedHeadline
             as="h1"
             text="Your fund investments, in one private view."
-            className="mt-4 max-w-xl min-h-[2.5em] text-4xl font-bold leading-tight tracking-tight text-white drop-shadow-[0_2px_14px_rgba(8,24,56,0.5)] sm:text-5xl"
+            className="mt-2 max-w-xl min-h-[2.4em] text-3xl font-bold leading-tight tracking-tight text-white drop-shadow-[0_2px_14px_rgba(8,24,56,0.5)] sm:text-4xl"
           />
-          <p className="mt-4 max-w-lg text-sm leading-6 text-white/90 drop-shadow-[0_1px_8px_rgba(8,24,56,0.55)] sm:text-base">
+          <p className="mt-2 max-w-lg text-sm leading-5 text-white/90 drop-shadow-[0_1px_8px_rgba(8,24,56,0.55)]">
             {app.description} Sign in to open only your own account. Follow capital movements and the units you hold, then download the statements issued for you.
           </p>
           <HomeActions />
         </div>
-        <ul className="mt-10 grid gap-5 md:mt-auto md:grid-cols-3 md:pt-16">
+        <ul className="mt-4 grid max-w-3xl gap-3 sm:grid-cols-3">
           {points.map((point) => (
             <li
               key={point.title}
-              className={`relative flex min-h-[132px] items-center overflow-hidden rounded-[22px] px-5 py-5 shadow-[0_10px_28px_rgba(20,50,90,0.08)] ${point.card}`}
+              className={`relative flex overflow-hidden rounded-2xl shadow-[0_8px_18px_rgba(20,50,90,0.08)] ${point.card}`}
             >
               <CardWave fill={point.wave} />
-              <div className="relative flex min-w-0 flex-1 items-start gap-3.5 pr-12">
-                <span
-                  className={`inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${point.iconWrap}`}
-                >
-                  <CardIcon name={point.icon} />
-                </span>
-                <div className="min-w-0">
-                  <h2 className="text-[15px] font-semibold leading-5 text-[#1b3f86]">
+              <div className="relative flex min-w-0 flex-1 flex-col gap-1.5 px-3 py-3 pr-11">
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${point.iconWrap}`}
+                  >
+                    <CardIcon name={point.icon} />
+                  </span>
+                  <h2 className="text-[13px] font-semibold leading-4 text-[#1b3f86]">
                     {point.title}
                   </h2>
-                  <p className="mt-1.5 text-[13px] leading-5 text-[#64748b]">
-                    {point.body}
-                  </p>
                 </div>
+                <p className="text-[11px] leading-[1.35] text-[#4b5563]">{point.body}</p>
               </div>
               <Link
                 href={point.href}
                 aria-label={point.title}
-                className={`absolute right-4 top-1/2 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full text-white shadow-sm ${point.button}`}
+                className={`absolute right-2 top-3 inline-flex h-7 w-7 items-center justify-center rounded-full text-white shadow-sm ${point.button}`}
               >
                 <ArrowIcon />
               </Link>
@@ -99,7 +97,7 @@ export default function HomePage() {
 function CardWave({ fill }: { fill: string }) {
   return (
     <svg
-      className="pointer-events-none absolute inset-y-0 right-0 h-full w-[62%]"
+      className="pointer-events-none absolute inset-y-0 right-0 h-full w-[46%]"
       viewBox="0 0 240 140"
       preserveAspectRatio="none"
       aria-hidden="true"

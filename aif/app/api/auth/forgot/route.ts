@@ -11,7 +11,7 @@ export async function POST(request: Request) {
     return jsonError("Enter the mobile number or email on the account.", 400);
   }
 
-  const clientCode = findClientCode(identifier);
+  const clientCode = await findClientCode(identifier);
   if (!clientCode) {
     return jsonError(
       "No investor account matches that mobile number or email.",

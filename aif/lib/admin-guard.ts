@@ -1,5 +1,3 @@
-import "server-only";
-
 import { getStaff, roleCan, staffVersion, type AdminRole, type AdminUser } from "@/lib/admin-store";
 import { jsonError } from "@/lib/http";
 import { readAdminSession } from "@/lib/session";
@@ -10,11 +8,11 @@ export async function authorizeAdmin(minimum: AdminRole = "admin", moduleName?: 
 > {
   const session = await readAdminSession();
   if (!session) return { response: jsonError("Admin sign in required.", 401) };
-  const version = staffVersion(session.staffId);
+  const version = await staffVersion(session.staffId);
   if (version === null || version !== session.passwordVersion) {
     return { response: jsonError("Admin sign in required.", 401) };
   }
-  const account = getStaff(session.staffId);
+  const account = await getStaff(session.staffId);
   if (!account) return { response: jsonError("Admin sign in required.", 401) };
   if (account.status === "suspended") {
     return { response: jsonError("This staff account is suspended.", 403) };

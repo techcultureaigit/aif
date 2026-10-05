@@ -1,12 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import LoadError from "@/components/ui/LoadError";
-import PageHeader from "@/components/ui/PageHeader";
 import Skeleton from "@/components/ui/Skeleton";
 import StatusBadge from "@/components/ui/StatusBadge";
 import { formatInr } from "@/lib/format";
+import { api } from "@/config/endapi";
 import { usePortalResource } from "@/lib/use-portal-resource";
 import type { ClientStatus } from "@/lib/types";
 
@@ -22,7 +23,8 @@ type ClientRow = {
 };
 
 export default function ClientMaster() {
-  const { data, status, reload } = usePortalResource<{ clients: ClientRow[] }>("/api/admin/clients");
+  const router = useRouter();
+  const { data, status, reload } = usePortalResource<{ clients: ClientRow[] }>(api.admin.clients);
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<"all" | ClientStatus>("all");
 
@@ -42,20 +44,7 @@ export default function ClientMaster() {
 
   return (
     <div className="w-full">
-      <PageHeader
-        eyebrow="Clients"
-        title="Client master"
-        description="Search investors and open a 360 view of profile, holdings, ledger, and compliance."
-        action={
-          <Link
-            href="/admin/clients/new"
-            className="inline-flex shrink-0 items-center rounded-xl bg-white px-4 py-2 text-sm font-semibold text-[var(--pm-primary)]"
-          >
-            Create client
-          </Link>
-        }
-      />
-      <div className="mb-4 flex flex-wrap gap-3 rounded-2xl border border-border bg-white p-4 shadow-[0_10px_24px_rgba(20,50,90,0.05)]">
+      <div className="mb-4 flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-white p-4 shadow-[0_10px_24px_rgba(20,50,90,0.05)]">
         <input
           value={query}
           onChange={(event) => setQuery(event.target.value)}
@@ -71,6 +60,12 @@ export default function ClientMaster() {
           <option value="active">Active</option>
           <option value="inactive">Inactive</option>
         </select>
+        <Link
+          href="/admin/clients/new"
+          className="ml-auto inline-flex items-center rounded-xl bg-button px-4 py-2 text-sm font-semibold text-button-text"
+        >
+          Create client
+        </Link>
       </div>
       {status === "loading" ? <Skeleton className="h-64" /> : null}
       {status === "error" ? <LoadError onRetry={reload} /> : null}
@@ -89,12 +84,12 @@ export default function ClientMaster() {
             </thead>
             <tbody>
               {rows.map((client) => (
-                <tr key={client.code} className="border-b border-border last:border-0">
-                  <td className="px-3 py-3">
-                    <Link href={`/admin/clients/${client.code}`} className="font-medium text-primary">
-                      {client.code}
-                    </Link>
-                  </td>
+                <tr
+                  key={client.code}
+                  className="cursor-pointer border-b border-border last:border-0 hover:bg-[var(--pm-portal-page)]"
+                  onClick={() => router.push(`/admin/clients/${client.code}`)}
+                >
+                  <td className="px-3 py-3 font-medium text-primary">{client.code}</td>
                   <td className="px-3 py-3">{client.name}</td>
                   <td className="px-3 py-3">{client.mobile}</td>
                   <td className="px-3 py-3">{client.email}</td>

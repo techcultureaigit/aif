@@ -55,12 +55,12 @@ export default function LoginHighlights() {
           className="animate-login-rise flex items-center gap-3 rounded-2xl border border-white bg-white px-4 py-3 text-foreground shadow-[0_10px_28px_rgba(8,24,56,0.16)]"
           style={{ animationDelay: `${520 + index * 80}ms` }}
         >
-          <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#e8eefc] text-[#12357a]">
+          <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#EBF2F8] text-[#1B3C6C]">
             {item.icon}
           </span>
           <span className="min-w-0">
             <span className="block text-xs font-semibold uppercase tracking-wide text-slate-500">{item.title}</span>
-            <span className="mt-0.5 block text-sm font-semibold text-[#12357a]">{item.text}</span>
+            <span className="mt-0.5 block text-sm font-semibold text-[#1B3C6C]">{item.text}</span>
             <span className="block text-xs text-slate-600">{item.detail}</span>
           </span>
         </li>

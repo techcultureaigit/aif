@@ -52,6 +52,24 @@ export type AdminUser = {
   role: AdminRole;
 };
 
+export type Nominee = {
+  name: string;
+  relationship: string;
+};
+
+export type BankAccount = {
+  accountNumber: string;
+  ifsccode: string;
+  accountHolderName: string;
+  upiId: string;
+  bankCity: string;
+  bankName: string;
+  micrCode: string;
+  accountType: string;
+  isPrimary: boolean;
+  dpOrderId: string;
+};
+
 export type InvestorProfile = {
   tradingCode: string;
   fullName: string;
@@ -66,12 +84,14 @@ export type InvestorProfile = {
   address: string;
   nomineeName: string;
   nomineeRelationship: string;
+  nominees: Nominee[];
   kra: boolean;
   fatca: boolean;
   status: ClientStatus;
   bankName: string;
   accountNumber: string;
   ifsc: string;
+  banks: BankAccount[];
 };
 
 export type PortalData = {

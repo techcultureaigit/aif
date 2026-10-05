@@ -5,7 +5,7 @@ import { asRecord, jsonError, readJson } from "@/lib/http";
 export async function GET() {
   const auth = await authorizeAdmin("superadmin");
   if (auth.response) return auth.response;
-  return Response.json(roleMatrix());
+  return Response.json(await roleMatrix());
 }
 
 export async function PUT(request: Request) {
@@ -18,5 +18,5 @@ export async function PUT(request: Request) {
   Object.entries(permissions).forEach(([key, value]) => {
     if (typeof value === "boolean") next[key] = value;
   });
-  return Response.json(saveAdminPermissions(auth.user, next));
+  return Response.json(await saveAdminPermissions(auth.user, next));
 }

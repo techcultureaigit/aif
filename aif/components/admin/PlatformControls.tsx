@@ -2,9 +2,9 @@
 
 import { FormEvent, useState } from "react";
 import LoadError from "@/components/ui/LoadError";
-import PageHeader from "@/components/ui/PageHeader";
 import Skeleton from "@/components/ui/Skeleton";
 import { inputClass, labelClass, primaryButtonClass } from "@/components/ui/classes";
+import { api, apiFetch } from "@/config/endapi";
 import { usePortalResource } from "@/lib/use-portal-resource";
 
 type Platform = {
@@ -14,13 +14,13 @@ type Platform = {
 };
 
 export default function PlatformControls() {
-  const { data, status, reload } = usePortalResource<Platform>("/api/admin/platform");
-  const clients = usePortalResource<{ clients: Array<{ code: string; name: string }> }>("/api/admin/clients");
+  const { data, status, reload } = usePortalResource<Platform>(api.admin.platform);
+  const clients = usePortalResource<{ clients: Array<{ code: string; name: string }> }>(api.admin.clients);
   const [message, setMessage] = useState<string | null>(null);
   const [pendingOverride, setPendingOverride] = useState<FormData | null>(null);
 
   async function post(body: Record<string, unknown>) {
-    const response = await fetch("/api/admin/platform", {
+    const response = await apiFetch(api.admin.platform, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
@@ -53,10 +53,6 @@ export default function PlatformControls() {
 
   return (
     <div className="w-full space-y-6">
-      <PageHeader
-        title="Platform controls"
-        description="KRA connection, the security master, and corrected ledger entries."
-      />
       {status === "loading" ? <Skeleton className="h-40" /> : null}
       {status === "error" ? <LoadError onRetry={reload} /> : null}
       {message ? <p className="text-sm text-primary">{message}</p> : null}

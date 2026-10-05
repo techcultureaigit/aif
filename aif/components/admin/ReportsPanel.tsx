@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import LoadError from "@/components/ui/LoadError";
-import PageHeader from "@/components/ui/PageHeader";
 import Skeleton from "@/components/ui/Skeleton";
 import { inputClass, labelClass, primaryButtonClass, secondaryButtonClass } from "@/components/ui/classes";
 import { formatDate } from "@/lib/format";
+import { api, apiFetch } from "@/config/endapi";
 import { usePortalResource } from "@/lib/use-portal-resource";
 
 type Run = {
@@ -20,12 +20,12 @@ type Run = {
 };
 
 export default function ReportsPanel() {
-  const clients = usePortalResource<{ clients: Array<{ code: string; name: string }> }>("/api/admin/clients");
-  const history = usePortalResource<{ runs: Run[] }>("/api/admin/reports");
+  const clients = usePortalResource<{ clients: Array<{ code: string; name: string }> }>(api.admin.clients);
+  const history = usePortalResource<{ runs: Run[] }>(api.admin.reports);
   const [message, setMessage] = useState<string | null>(null);
 
   async function send(form: HTMLFormElement, mode: "manual" | "scheduled") {
-    const response = await fetch("/api/admin/reports", {
+    const response = await apiFetch(api.admin.reports, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ...Object.fromEntries(new FormData(form).entries()), mode }),
@@ -37,10 +37,6 @@ export default function ReportsPanel() {
 
   return (
     <div className="w-full">
-      <PageHeader
-        title="Reports and statements"
-        description="Generate a statement now, or schedule daily, weekly, or monthly delivery."
-      />
       <form
         onSubmit={(event) => {
           event.preventDefault();

@@ -5,6 +5,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import Logo, { type BrandDisplay } from "@/components/layout/Logo";
+import SectionBar from "@/components/layout/SectionBar";
+import { api, apiFetch } from "@/config/endapi";
 import type { AdminUser } from "@/lib/types";
 
 const links = [
@@ -12,6 +14,7 @@ const links = [
   { href: "/admin/clients", label: "Client master", module: "clients" },
   { href: "/admin/imports", label: "Imports", module: "imports" },
   { href: "/admin/reports", label: "Reports", module: "reports" },
+  { href: "/admin/nav", label: "NAV", module: "nav" },
   { href: "/admin/users", label: "Staff directory", module: "users" },
   { href: "/admin/roles", label: "Role matrix", module: "users" },
   { href: "/admin/audit", label: "Audit trail", module: "audit" },
@@ -37,7 +40,7 @@ export default function AdminShell({
     let active = true;
     async function load() {
       try {
-        const response = await fetch("/api/admin/session");
+        const response = await apiFetch(api.admin.session);
         const data = (await response.json()) as { user: AdminUser | null };
         if (!active) return;
         setUser(data.user);
@@ -46,7 +49,7 @@ export default function AdminShell({
           router.replace("/admin/login");
           return;
         }
-        const access = await fetch("/api/admin/access");
+        const access = await apiFetch(api.admin.access);
         const rights = (await access.json()) as { modules?: Record<string, boolean> };
         if (!active) return;
         setModules(rights.modules ?? {});
@@ -64,7 +67,7 @@ export default function AdminShell({
   }, [router]);
 
   async function logout() {
-    await fetch("/api/auth/logout", { method: "POST" });
+    await apiFetch(api.auth.logout, { method: "POST" });
     router.replace("/admin/login");
   }
 
@@ -73,7 +76,7 @@ export default function AdminShell({
   }
 
   const visible = links.filter((link) => !link.module || modules[link.module] !== false);
-  const title = pageTitle(pathname, user.role);
+  const banner = adminBanner(pathname, user.role);
 
   return (
     <div className="flex h-dvh overflow-hidden" style={{ background: "var(--pm-portal-page)" }}>
@@ -127,65 +130,48 @@ export default function AdminShell({
             );
           })}
         </nav>
-        <div className="p-3">
-          <p className="px-3 pb-2 text-xs text-[var(--pm-portal-sidebar-muted)]">
-            {user.name}
-            <span className="mt-0.5 block font-medium capitalize text-[var(--pm-portal-sidebar-text)]">
-              {user.role === "superadmin" ? "Super admin" : "Admin"}
-            </span>
-          </p>
-          <button
-            type="button"
-            onClick={() => void logout()}
-            className="w-full rounded-xl px-3 py-2 text-left text-sm text-[var(--pm-portal-sidebar-text)] hover:bg-[var(--pm-portal-page)]"
-          >
-            Log out
-          </button>
-        </div>
       </aside>
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-        <header
-          className="flex h-16 shrink-0 items-center justify-between gap-3 border-b border-border px-4 shadow-[0_8px_24px_rgba(79,70,229,0.06)] md:px-6"
-          style={{ background: "var(--pm-portal-header)", color: "var(--pm-portal-header-text)" }}
-        >
-          <div className="flex min-w-0 items-center gap-3">
+        <SectionBar
+          title={banner.title}
+          description={banner.description}
+          start={
             <button
               type="button"
-              className="inline-flex h-10 w-10 flex-col items-center justify-center gap-1 rounded-2xl bg-[var(--pm-portal-page)] md:hidden"
+              className="inline-flex h-10 w-10 shrink-0 flex-col items-center justify-center gap-1 rounded-2xl bg-white/15 md:hidden"
               aria-label="Open menu"
               aria-expanded={menuOpen}
               onClick={() => setMenuOpen(true)}
             >
-              <span className="block h-0.5 w-4 bg-foreground" />
-              <span className="block h-0.5 w-4 bg-foreground" />
-              <span className="block h-0.5 w-4 bg-foreground" />
+              <span className="block h-0.5 w-4 bg-white" />
+              <span className="block h-0.5 w-4 bg-white" />
+              <span className="block h-0.5 w-4 bg-white" />
             </button>
-            <span className="hidden h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[var(--pm-nav-dashboard-bg)] text-[var(--pm-nav-dashboard-color)] sm:inline-flex">
-              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-                <path d="M4 19V5M4 19h16" strokeLinecap="round" />
-                <path d="M7 15l4-4 3 2 5-6" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </span>
-            <div className="min-w-0">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">
-                {user.role === "superadmin" ? "Super admin" : "Admin panel"}
-              </p>
-              <p className="truncate text-sm font-semibold">{title}</p>
+          }
+          end={
+            <div className="flex shrink-0 items-center gap-2">
+              <div className="flex min-w-0 items-center gap-2.5 rounded-2xl bg-white/15 py-1.5 pl-1.5 pr-3">
+                <span
+                  className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-xs font-semibold text-white"
+                  style={{ background: "linear-gradient(135deg, var(--pm-banner-from), var(--pm-banner-to))" }}
+                >
+                  {initials(user.name)}
+                </span>
+                <div className="hidden min-w-0 text-left sm:block">
+                  <p className="truncate text-sm font-semibold">{user.name}</p>
+                  <p className="truncate text-xs text-white/75">{user.role === "superadmin" ? "Super admin" : "Admin"}</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => void logout()}
+                className="rounded-xl bg-white/15 px-3 py-2 text-sm font-medium text-white hover:bg-white/25"
+              >
+                Log out
+              </button>
             </div>
-          </div>
-          <div className="flex min-w-0 items-center gap-2.5 rounded-2xl bg-[var(--pm-portal-page)] py-1.5 pl-1.5 pr-3">
-            <span
-              className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-xs font-semibold text-white"
-              style={{ background: "linear-gradient(135deg, var(--pm-banner-from), var(--pm-banner-to))" }}
-            >
-              {initials(user.name)}
-            </span>
-            <div className="hidden min-w-0 text-left sm:block">
-              <p className="truncate text-sm font-semibold">{user.name}</p>
-              <p className="truncate text-xs text-muted">{user.role === "superadmin" ? "Super admin" : "Admin"}</p>
-            </div>
-          </div>
-        </header>
+          }
+        />
         <main className="min-h-0 flex-1 overflow-y-auto px-4 py-6 md:px-6 md:py-8">{children}</main>
       </div>
     </div>
@@ -201,10 +187,92 @@ function initials(name: string) {
     .join("");
 }
 
-function pageTitle(pathname: string, role: string) {
-  if (pathname === "/admin") return role === "superadmin" ? "Command center" : "Dashboard";
-  if (pathname === "/admin/clients/new") return "New client";
-  if (pathname.startsWith("/admin/clients/") && pathname !== "/admin/clients") return "Client record";
-  const link = links.find((item) => item.href !== "/admin" && pathname.startsWith(item.href));
-  return link?.label ?? "Admin";
+function adminBanner(pathname: string, role: string) {
+  if (pathname === "/admin") {
+    return role === "superadmin"
+      ? {
+          title: "Command center",
+          description: "Platform value, staff sign-ins, import failures, and high-privilege actions.",
+        }
+      : {
+          title: "Admin dashboard",
+          description: "Operational counts, compliance alerts, recent imports, and statement runs.",
+        };
+  }
+  if (pathname === "/admin/clients/new") {
+    return {
+      title: "Create client",
+      description: "Onboard an investor with personal, bank, nominee, and PAN details.",
+    };
+  }
+  if (pathname.startsWith("/admin/clients/") && pathname !== "/admin/clients") {
+    return {
+      title: "Client record",
+      description: "Profile, bank, nominee, compliance, holdings, ledger, and audit history.",
+    };
+  }
+  if (pathname.startsWith("/admin/clients")) {
+    return {
+      title: "Client master",
+      description: "Search investors and open a 360 view of profile, holdings, ledger, and compliance.",
+    };
+  }
+  if (pathname.startsWith("/admin/imports")) {
+    return {
+      title: "CSV import",
+      description: "Upload a ledger or holdings file, review the rows, then commit the valid ones.",
+    };
+  }
+  if (pathname.startsWith("/admin/reports")) {
+    return {
+      title: "Reports and statements",
+      description: "Generate a statement now, or schedule daily, weekly, or monthly delivery.",
+    };
+  }
+  if (pathname.startsWith("/admin/nav")) {
+    return {
+      title: "NAV",
+      description: "Add the fund NAV for a date. Clients see units multiplied by the latest NAV.",
+    };
+  }
+  if (pathname.startsWith("/admin/users")) {
+    return {
+      title: "Staff directory",
+      description: "Create, edit, activate, or suspend internal admin accounts.",
+    };
+  }
+  if (pathname.startsWith("/admin/roles")) {
+    return {
+      title: "Role matrix",
+      description: "Super admin keeps full access. Change what the admin role can open.",
+    };
+  }
+  if (pathname.startsWith("/admin/audit")) {
+    return {
+      title: "Audit trail",
+      description: "Filter high-privilege actions by person, action, and the record that changed.",
+    };
+  }
+  if (pathname.startsWith("/admin/schedules")) {
+    return {
+      title: "Statement schedules",
+      description: "Set how often statements go out, who receives them, and how failures are retried.",
+    };
+  }
+  if (pathname.startsWith("/admin/platform")) {
+    return {
+      title: "Platform controls",
+      description: "KRA connection, the security master, and corrected ledger entries.",
+    };
+  }
+  if (pathname.startsWith("/admin/interview")) {
+    return {
+      title: "Project walkthrough",
+      description: "How this part of the portal is built and what it is responsible for.",
+    };
+  }
+  return {
+    title: "Admin",
+    description: "Fund operations for clients, imports, reports, and platform settings.",
+  };
 }

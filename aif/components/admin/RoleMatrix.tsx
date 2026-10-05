@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import LoadError from "@/components/ui/LoadError";
-import PageHeader from "@/components/ui/PageHeader";
 import Skeleton from "@/components/ui/Skeleton";
 import { primaryButtonClass } from "@/components/ui/classes";
+import { api, apiFetch } from "@/config/endapi";
 import { usePortalResource } from "@/lib/use-portal-resource";
 
 type Matrix = {
@@ -16,14 +16,14 @@ type Matrix = {
 };
 
 export default function RoleMatrix() {
-  const { data, status, reload } = usePortalResource<Matrix>("/api/admin/roles");
+  const { data, status, reload } = usePortalResource<Matrix>(api.admin.roles);
   const [draft, setDraft] = useState<Record<string, boolean> | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [confirming, setConfirming] = useState(false);
   const admin = draft ?? data?.roles.admin ?? {};
 
   async function save() {
-    const response = await fetch("/api/admin/roles", {
+    const response = await apiFetch(api.admin.roles, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ admin }),
@@ -38,10 +38,6 @@ export default function RoleMatrix() {
 
   return (
     <div className="w-full">
-      <PageHeader
-        title="Role matrix"
-        description="Super admin keeps full access. Change what the admin role can open."
-      />
       {status === "loading" ? <Skeleton className="h-64" /> : null}
       {status === "error" ? <LoadError onRetry={reload} /> : null}
       {status === "ready" && data ? (
@@ -57,7 +53,7 @@ export default function RoleMatrix() {
             <tbody>
               {data.modules.map((moduleName) => (
                 <tr key={moduleName} className="border-b border-border last:border-0">
-                  <td className="px-3 py-3 capitalize">{moduleName}</td>
+                  <td className="px-3 py-3 capitalize">{moduleName === "nav" ? "NAV" : moduleName}</td>
                   <td className="px-3 py-3">Allowed</td>
                   <td className="px-3 py-3">
                     {["users", "audit", "schedules", "platform", "ledger"].includes(moduleName) ? (

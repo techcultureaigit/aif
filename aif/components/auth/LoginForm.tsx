@@ -55,7 +55,7 @@ export default function LoginForm() {
             required
             autoComplete="username"
             inputMode="email"
-            className="w-full bg-transparent text-sm text-foreground outline-none"
+            className="w-full bg-slate-50 text-sm text-foreground outline-none"
           />
         </span>
       </label>
@@ -79,7 +79,7 @@ export default function LoginForm() {
             type="password"
             required
             autoComplete="current-password"
-            className="w-full bg-transparent text-sm text-foreground outline-none"
+            className="w-full bg-slate-50 text-sm text-foreground outline-none"
           />
         </span>
       </div>

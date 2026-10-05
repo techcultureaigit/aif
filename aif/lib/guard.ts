@@ -1,4 +1,3 @@
-import "server-only";
 import { jsonError } from "@/lib/http";
 import { getPortal } from "@/lib/portal-store";
 import { readSession } from "@/lib/session";
@@ -20,7 +19,7 @@ export async function authorizePortal(request: Request): Promise<
     };
   }
 
-  const portal = getPortal(session.clientCode);
+  const portal = await getPortal(session.clientCode);
   if (!portal) {
     return { response: jsonError("Sign in required.", 401) };
   }

@@ -14,7 +14,7 @@ export async function POST(request: Request) {
   const message = passwordError(password);
   if (message) return jsonError(message, 400);
 
-  if (!updatePassword(clientCode, password)) {
+  if (!(await updatePassword(clientCode, password))) {
     return jsonError("The investor account could not be updated.", 400);
   }
 
@@ -22,6 +22,6 @@ export async function POST(request: Request) {
   await clearSession();
   return Response.json({
     message:
-      "Password updated. Sign in with the new password. This demo keeps it until the server process restarts.",
+      "Password updated. Sign in with the new password.",
   });
 }

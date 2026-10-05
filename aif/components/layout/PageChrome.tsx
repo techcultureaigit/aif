@@ -85,13 +85,19 @@ export default function PageChrome({
   }
 
   return (
-    <div className="flex min-h-full flex-1 flex-col">
+    <div
+      className={
+        homeBackground
+          ? "flex h-auto min-h-dvh flex-col md:h-dvh md:overflow-hidden"
+          : "flex min-h-full flex-1 flex-col"
+      }
+    >
       {homeBackground ? (
-        <div className="relative flex min-h-[110vh] flex-1 flex-col overflow-hidden">
+        <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
           <img
             src="/backt.png"
             alt=""
-            className="pointer-events-none absolute inset-x-0 top-0 h-[112%] w-full object-cover object-top"
+            className="pointer-events-none absolute inset-0 h-full w-full object-cover object-top"
           />
           <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(8,28,64,0.38)_0%,rgba(8,28,64,0.16)_34%,transparent_62%)]" />
           <div className="relative flex min-h-0 flex-1 flex-col">{frame}</div>
@@ -109,7 +115,15 @@ export default function PageChrome({
       ) : (
         frame
       )}
-      {showFooter ? footer : null}
+      {showFooter ? (
+        homeBackground ? (
+          <div className="shrink-0 [&_.footer-bar]:py-2 [&_.footer-blurb]:mt-2 [&_.footer-blurb]:text-xs [&_.footer-blurb]:leading-5 [&_.footer-grid]:gap-4 [&_.footer-grid]:px-6 [&_.footer-grid]:py-3 [&_.footer-grid]:lg:gap-6 [&_.footer-grid]:lg:py-3 [&_.footer-links]:mt-2 [&_.footer-links]:gap-1.5 [&_.footer-social]:mt-2 [&_footer]:mt-0">
+            {footer}
+          </div>
+        ) : (
+          footer
+        )
+      ) : null}
     </div>
   );
 }

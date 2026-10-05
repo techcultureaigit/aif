@@ -13,6 +13,7 @@ import { secondaryButtonClass } from "@/components/ui/classes";
 import { useApp } from "@/context/AppProvider";
 import { downloadBlob, loadStatementFile } from "@/lib/files";
 import { formatDate, formatInr } from "@/lib/format";
+import { api } from "@/config/endapi";
 import { usePortalResource } from "@/lib/use-portal-resource";
 import type { LedgerRow, PortfolioMetrics, StatementMeta } from "@/lib/types";
 
@@ -56,8 +57,8 @@ function MetricCard({
 }
 
 export default function ClientDashboard() {
-  const { pushToast, user } = useApp();
-  const { data, status, reload } = usePortalResource<Summary>("/api/portal/summary");
+  const { pushToast } = useApp();
+  const { data, status, reload } = usePortalResource<Summary>(api.portal.summary);
   const [downloading, setDownloading] = useState(false);
 
   async function downloadLatest(statement: StatementMeta) {
@@ -74,26 +75,11 @@ export default function ClientDashboard() {
 
   return (
     <div className="w-full">
-      <section
-        className="mb-6 flex flex-col gap-4 overflow-hidden rounded-3xl px-6 py-6 text-[var(--pm-banner-text)] shadow-[0_16px_40px_rgba(79,70,229,0.22)] sm:flex-row sm:items-center sm:justify-between"
-        style={{ background: "linear-gradient(90deg, var(--pm-banner-from), var(--pm-banner-via), var(--pm-banner-to))" }}
-      >
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/75">Portfolio overview</p>
-          <h1 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">
-            {user ? `Hello, ${user.name}` : "Your portfolio"}
-          </h1>
-          <p className="mt-2 max-w-xl text-sm leading-6 text-white/85">
-            A summary of your fund investments, market valuation, and recent ledger activity.
-          </p>
-        </div>
-        {status === "ready" && data ? (
-          <div className="rounded-2xl bg-white/15 px-4 py-3 text-sm backdrop-blur-sm">
-            <p className="text-xs font-semibold uppercase tracking-wide text-white/75">KRA compliance</p>
-            <p className="mt-1 font-semibold">{data.kraStatus === "verified" ? "Verified" : "Pending"}</p>
-          </div>
-        ) : null}
-      </section>
+      {status === "ready" && data ? (
+        <p className="mb-4 text-sm font-medium">
+          KRA compliance: {data.kraStatus === "verified" ? "Verified" : "Pending"}
+        </p>
+      ) : null}
 
       {status === "loading" ? (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-busy="true">

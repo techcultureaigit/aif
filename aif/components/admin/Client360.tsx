@@ -2,13 +2,16 @@
 
 import { FormEvent, useState } from "react";
 import LoadError from "@/components/ui/LoadError";
-import PageHeader from "@/components/ui/PageHeader";
 import Skeleton from "@/components/ui/Skeleton";
 import StatusBadge from "@/components/ui/StatusBadge";
-import { inputClass, labelClass, primaryButtonClass } from "@/components/ui/classes";
+import { inputClass, labelClass, primaryButtonClass, secondaryButtonClass } from "@/components/ui/classes";
+import { accountTypes, bankList, nomineeList, validateCreateClient } from "@/lib/client-validation";
 import { formatDate, formatInr, formatQuantity } from "@/lib/format";
+import { api, apiFetch } from "@/config/endapi";
 import { usePortalResource } from "@/lib/use-portal-resource";
-import type { PortalData } from "@/lib/types";
+import type { BankAccount, Nominee, PortalData } from "@/lib/types";
+
+const relationships = ["Spouse", "Father", "Mother", "Son", "Daughter", "Brother", "Sister", "Husband", "Wife", "Guardian", "Other"] as const;
 
 const tabs = [
   "Profile",
@@ -32,34 +35,134 @@ type RecordResponse = {
 };
 
 export default function Client360({ code }: { code: string }) {
-  const { data, status, reload } = usePortalResource<RecordResponse>(`/api/admin/clients/${code}`);
+  const { data, status, reload } = usePortalResource<RecordResponse>(api.admin.client(code));
   const [tab, setTab] = useState<(typeof tabs)[number]>("Profile");
   const [message, setMessage] = useState<string | null>(null);
-
-  async function save(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const form = new FormData(event.currentTarget);
-    const response = await fetch(`/api/admin/clients/${code}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        ...Object.fromEntries(form.entries()),
-        kra: form.get("kra") === "on",
-        fatca: form.get("fatca") === "on",
-      }),
-    });
-    setMessage(response.ok ? "Client record updated." : "The update could not be saved.");
-    if (response.ok) reload();
-  }
+  const [nominees, setNominees] = useState<Nominee[] | null>(null);
 
   const profile = data?.portal.profile;
+  const nomineeDraft = nominees ?? (profile ? nomineeList(profile) : []);
+
+  async function patch(body: Record<string, unknown>) {
+    const response = await apiFetch(api.admin.client(code), {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const payload = (await response.json().catch(() => ({}))) as { message?: string };
+    setMessage(response.ok ? "Client record updated." : payload.message ?? "The update could not be saved.");
+    if (response.ok) {
+      setNominees(null);
+      reload();
+    }
+  }
+
+  async function saveProfile(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!profile) return;
+    const form = new FormData(event.currentTarget);
+    const text = (key: string) => String(form.get(key) ?? "").trim();
+    const parsed = validateCreateClient({
+      fullName: text("fullName"),
+      email: text("email"),
+      mobile: text("mobile"),
+      pan: text("pan"),
+      dateOfBirth: text("dateOfBirth"),
+      address: text("address"),
+      nominees: nomineeList(profile),
+      bank: primaryBank(profile),
+      status: text("status") === "inactive" ? "inactive" : "active",
+      kra: profile.kra,
+    });
+    if (!parsed.ok) {
+      setMessage(parsed.message);
+      return;
+    }
+    await patch({
+      fullName: parsed.value.fullName,
+      email: parsed.value.email,
+      mobile: parsed.value.mobile,
+      pan: parsed.value.pan,
+      dateOfBirth: parsed.value.dateOfBirth,
+      address: parsed.value.address,
+      status: parsed.value.status,
+    });
+  }
+
+  async function saveBank(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!profile) return;
+    const form = new FormData(event.currentTarget);
+    const text = (key: string) => String(form.get(key) ?? "").trim();
+    const bank: BankAccount = {
+      accountHolderName: text("accountHolderName"),
+      accountNumber: text("accountNumber"),
+      ifsccode: text("ifsccode").toUpperCase(),
+      bankName: text("bankName"),
+      bankCity: text("bankCity"),
+      accountType: text("accountType"),
+      upiId: text("upiId"),
+      micrCode: text("micrCode"),
+      dpOrderId: text("dpOrderId"),
+      isPrimary: true,
+    };
+    const parsed = validateCreateClient({
+      fullName: profile.fullName,
+      email: profile.email,
+      mobile: profile.mobile,
+      pan: profile.pan,
+      dateOfBirth: profile.dateOfBirth,
+      address: profile.address,
+      nominees: nomineeList(profile),
+      bank,
+      status: profile.status,
+      kra: profile.kra,
+    });
+    if (!parsed.ok) {
+      setMessage(parsed.message);
+      return;
+    }
+    await patch({ bank: parsed.value.bank });
+  }
+
+  async function saveNominees(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!profile) return;
+    const parsed = validateCreateClient({
+      fullName: profile.fullName,
+      email: profile.email,
+      mobile: profile.mobile,
+      pan: profile.pan,
+      dateOfBirth: profile.dateOfBirth,
+      address: profile.address,
+      nominees: nomineeDraft,
+      bank: primaryBank(profile),
+      status: profile.status,
+      kra: profile.kra,
+    });
+    if (!parsed.ok) {
+      setMessage(parsed.message);
+      return;
+    }
+    await patch({ nominees: parsed.value.nominees });
+  }
+
+  async function saveCompliance(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    await patch({
+      kra: form.get("kra") === "on",
+      fatca: form.get("fatca") === "on",
+    });
+  }
+
+  function updateNominee(index: number, patchFields: Partial<Nominee>) {
+    setNominees(nomineeDraft.map((item, itemIndex) => (itemIndex === index ? { ...item, ...patchFields } : item)));
+  }
 
   return (
     <div className="w-full">
-      <PageHeader
-        title={profile ? `${profile.fullName} · ${profile.tradingCode}` : "Client 360"}
-        description="Profile, bank, nominee, compliance, holdings, ledger, and audit history."
-      />
+      {profile ? <h2 className="mb-4 text-lg font-semibold">{profile.fullName} · {profile.tradingCode}</h2> : null}
       {status === "loading" ? <Skeleton className="h-80" /> : null}
       {status === "error" ? <LoadError onRetry={reload} /> : null}
       {status === "ready" && data && profile ? (
@@ -87,12 +190,12 @@ export default function Client360({ code }: { code: string }) {
           </div>
           {message ? <p className="mb-3 text-sm text-primary">{message}</p> : null}
           {tab === "Profile" ? (
-            <form onSubmit={save} className="grid gap-4 rounded-2xl border border-border bg-white shadow-[0_10px_24px_rgba(20,50,90,0.05)] p-4 sm:grid-cols-2">
+            <form key={profile.tradingCode} onSubmit={saveProfile} className="grid gap-4 rounded-2xl border border-border bg-white p-4 shadow-[0_10px_24px_rgba(20,50,90,0.05)] lg:grid-cols-3">
               <Field name="fullName" label="Full name" defaultValue={profile.fullName} />
               <Field name="email" label="Email" defaultValue={profile.email} />
               <Field name="mobile" label="Mobile" defaultValue={profile.mobile} />
               <Field name="pan" label="PAN" defaultValue={profile.pan} />
-              <Field name="dateOfBirth" label="Date of birth" defaultValue={profile.dateOfBirth} />
+              <Field name="dateOfBirth" label="Date of birth" type="date" defaultValue={profile.dateOfBirth} />
               <Field name="address" label="Address" defaultValue={profile.address} />
               <label className="text-sm">
                 <span className={labelClass}>Status</span>
@@ -101,26 +204,70 @@ export default function Client360({ code }: { code: string }) {
                   <option value="inactive">Inactive</option>
                 </select>
               </label>
-              <button type="submit" className={`${primaryButtonClass} sm:col-span-2 sm:w-fit`}>Save profile</button>
+              <div className="lg:col-span-3">
+                <button type="submit" className={primaryButtonClass}>Save profile</button>
+              </div>
             </form>
           ) : null}
           {tab === "Bank" ? (
-            <form onSubmit={save} className="grid gap-4 rounded-2xl border border-border bg-white shadow-[0_10px_24px_rgba(20,50,90,0.05)] p-4 sm:grid-cols-2">
-              <Field name="bankName" label="Bank" defaultValue={profile.bankName} />
-              <Field name="accountNumber" label="Account number" defaultValue={profile.accountNumber} />
-              <Field name="ifsc" label="IFSC" defaultValue={profile.ifsc} />
-              <button type="submit" className={`${primaryButtonClass} sm:col-span-2 sm:w-fit`}>Save bank</button>
-            </form>
+            <BankForm key={`${profile.tradingCode}-bank`} bank={primaryBank(profile)} onSubmit={saveBank} />
           ) : null}
           {tab === "Nominee" ? (
-            <form onSubmit={save} className="grid gap-4 rounded-2xl border border-border bg-white shadow-[0_10px_24px_rgba(20,50,90,0.05)] p-4 sm:grid-cols-2">
-              <Field name="nomineeName" label="Nominee" defaultValue={profile.nomineeName} />
-              <Field name="nomineeRelationship" label="Relationship" defaultValue={profile.nomineeRelationship} />
-              <button type="submit" className={`${primaryButtonClass} sm:col-span-2 sm:w-fit`}>Save nominee</button>
+            <form onSubmit={saveNominees} className="grid gap-4 rounded-2xl border border-border bg-white p-4 shadow-[0_10px_24px_rgba(20,50,90,0.05)]">
+              {nomineeDraft.map((nominee, index) => (
+                <div key={index} className="grid gap-4 border-t border-border pt-4 first:border-0 first:pt-0 lg:grid-cols-3">
+                  <label className="text-sm">
+                    <span className={labelClass}>Nominee {index + 1}</span>
+                    <input
+                      value={nominee.name}
+                      onChange={(event) => updateNominee(index, { name: event.target.value })}
+                      className={inputClass}
+                    />
+                  </label>
+                  <label className="text-sm">
+                    <span className={labelClass}>Relationship</span>
+                    <select
+                      value={relationships.includes(nominee.relationship as (typeof relationships)[number]) ? nominee.relationship : ""}
+                      onChange={(event) => updateNominee(index, { relationship: event.target.value })}
+                      className={inputClass}
+                    >
+                      <option value="">Select relationship</option>
+                      {relationships.filter((relationship) => relationship !== "Other").map((relationship) => (
+                        <option key={relationship} value={relationship}>
+                          {relationship}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="text-sm">
+                    <span className={labelClass}>Or type a relationship</span>
+                    <input
+                      value={nominee.relationship}
+                      onChange={(event) => updateNominee(index, { relationship: event.target.value })}
+                      className={inputClass}
+                    />
+                  </label>
+                </div>
+              ))}
+              <div className="flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  className={secondaryButtonClass}
+                  onClick={() => setNominees([...nomineeDraft, { name: "", relationship: "" }])}
+                >
+                  Add nominee
+                </button>
+                {nomineeDraft.length > 1 ? (
+                  <button type="button" className={secondaryButtonClass} onClick={() => setNominees(nomineeDraft.slice(0, -1))}>
+                    Remove last nominee
+                  </button>
+                ) : null}
+                <button type="submit" className={primaryButtonClass}>Save nominees</button>
+              </div>
             </form>
           ) : null}
           {tab === "KRA" ? (
-            <form onSubmit={save} className="rounded-2xl border border-border bg-white shadow-[0_10px_24px_rgba(20,50,90,0.05)] p-4">
+            <form key={`${profile.tradingCode}-kra`} onSubmit={saveCompliance} className="rounded-2xl border border-border bg-white p-4 shadow-[0_10px_24px_rgba(20,50,90,0.05)]">
               <label className="flex items-center gap-2 text-sm">
                 <input name="kra" type="checkbox" defaultChecked={profile.kra} />
                 KRA verified
@@ -162,12 +309,69 @@ export default function Client360({ code }: { code: string }) {
   );
 }
 
-function Field({ name, label, defaultValue }: { name: string; label: string; defaultValue: string }) {
+function Field({
+  name,
+  label,
+  defaultValue,
+  type = "text",
+}: {
+  name: string;
+  label: string;
+  defaultValue: string;
+  type?: string;
+}) {
   return (
     <label className="text-sm">
       <span className={labelClass}>{label}</span>
-      <input name={name} defaultValue={defaultValue} className={inputClass} />
+      <input name={name} type={type} defaultValue={defaultValue} className={inputClass} style={type === "date" ? { colorScheme: "light" } : undefined} />
     </label>
+  );
+}
+
+function BankForm({ bank, onSubmit }: { bank: BankAccount; onSubmit: (event: FormEvent<HTMLFormElement>) => void }) {
+  return (
+    <form onSubmit={onSubmit} className="grid gap-4 rounded-2xl border border-border bg-white p-4 shadow-[0_10px_24px_rgba(20,50,90,0.05)] lg:grid-cols-3">
+      <Field name="accountHolderName" label="Account holder name" defaultValue={bank.accountHolderName} />
+      <Field name="accountNumber" label="Account number" defaultValue={bank.accountNumber} />
+      <Field name="ifsccode" label="IFSC code" defaultValue={bank.ifsccode} />
+      <Field name="bankName" label="Bank name" defaultValue={bank.bankName} />
+      <Field name="bankCity" label="Bank city" defaultValue={bank.bankCity} />
+      <label className="text-sm">
+        <span className={labelClass}>Account type</span>
+        <select name="accountType" defaultValue={bank.accountType} className={inputClass}>
+          <option value="">Select account type</option>
+          {accountTypes.map((type) => (
+            <option key={type} value={type}>
+              {type}
+            </option>
+          ))}
+        </select>
+      </label>
+      <Field name="upiId" label="UPI ID" defaultValue={bank.upiId} />
+      <Field name="micrCode" label="MICR code" defaultValue={bank.micrCode} />
+      <Field name="dpOrderId" label="DP order ID" defaultValue={bank.dpOrderId} />
+      <div className="lg:col-span-3">
+        <button type="submit" className={primaryButtonClass}>Save bank</button>
+      </div>
+    </form>
+  );
+}
+
+function primaryBank(profile: PortalData["profile"]): BankAccount {
+  const bank = bankList(profile).find((item) => item.isPrimary) ?? bankList(profile)[0];
+  return (
+    bank ?? {
+      accountNumber: "",
+      ifsccode: "",
+      accountHolderName: "",
+      upiId: "",
+      bankCity: "",
+      bankName: "",
+      micrCode: "",
+      accountType: "",
+      isPrimary: true,
+      dpOrderId: "",
+    }
   );
 }
 

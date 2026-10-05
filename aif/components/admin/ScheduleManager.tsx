@@ -2,9 +2,9 @@
 
 import { FormEvent, useState } from "react";
 import LoadError from "@/components/ui/LoadError";
-import PageHeader from "@/components/ui/PageHeader";
 import Skeleton from "@/components/ui/Skeleton";
 import { inputClass, labelClass, primaryButtonClass } from "@/components/ui/classes";
+import { api, apiFetch } from "@/config/endapi";
 import { usePortalResource } from "@/lib/use-portal-resource";
 
 type Rule = {
@@ -16,14 +16,14 @@ type Rule = {
 };
 
 export default function ScheduleManager() {
-  const { data, status, reload } = usePortalResource<{ schedules: Rule[] }>("/api/admin/platform");
+  const { data, status, reload } = usePortalResource<{ schedules: Rule[] }>(api.admin.platform);
   const [message, setMessage] = useState<string | null>(null);
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
     const fields = Object.fromEntries(new FormData(form).entries());
-    const response = await fetch("/api/admin/platform", {
+    const response = await apiFetch(api.admin.platform, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -42,10 +42,6 @@ export default function ScheduleManager() {
 
   return (
     <div className="w-full">
-      <PageHeader
-        title="Statement schedules"
-        description="Set how often statements go out, who receives them, and how failures are retried."
-      />
       {status === "loading" ? <Skeleton className="h-40" /> : null}
       {status === "error" ? <LoadError onRetry={reload} /> : null}
       {status === "ready" ? (
