@@ -38,3 +38,5 @@ app.use((error, _req, res, _next) => {
 app.listen(port, () => {
   console.log(`AIF API listening on http://localhost:${port}`);
 });
+
+module.exports=app;
