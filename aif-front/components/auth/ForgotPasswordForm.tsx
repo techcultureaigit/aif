@@ -1,0 +1,272 @@
+"use client";
+
+import { FormEvent, useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import {
+  errorClass,
+  inputClass,
+  labelClass,
+  primaryButtonClass,
+  secondaryButtonClass,
+} from "@/components/ui/classes";
+import { useApp } from "@/context/AppProvider";
+import { api, apiFetch } from "@/config/endapi";
+import { passwordError } from "@/lib/password";
+
+type Step = "identify" | "otp" | "reset" | "done";
+
+function readStep(value: unknown): Step {
+  return value === "otp" || value === "reset" || value === "done" ? value : "identify";
+}
+
+export default function ForgotPasswordForm() {
+  const { user, ready } = useApp();
+  const router = useRouter();
+  const [step, setStep] = useState<Step>("identify");
+  const [error, setError] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
+  const [doneMessage, setDoneMessage] = useState("");
+  const flow = useRef(0);
+
+  function showStep(next: Step) {
+    window.history.pushState({ forgotStep: next }, "");
+    setStep(next);
+    setError(null);
+  }
+
+  useEffect(() => {
+    if (ready && user) {
+      router.replace("/dashboard");
+    }
+  }, [ready, user, router]);
+
+  useEffect(() => {
+    if (window.history.state?.forgotStep == null) {
+      window.history.replaceState({ forgotStep: "identify" }, "");
+    } else {
+      setStep(readStep(window.history.state.forgotStep));
+    }
+
+    function onPop(event: PopStateEvent) {
+      flow.current += 1;
+      setPending(false);
+      setError(null);
+      setStep(readStep(event.state?.forgotStep));
+    }
+
+    window.addEventListener("popstate", onPop);
+    return () => {
+      flow.current += 1;
+      window.removeEventListener("popstate", onPop);
+    };
+  }, []);
+
+  async function post(url: string, body: object) {
+    const response = await apiFetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const data = (await response.json().catch(() => ({}))) as {
+      message?: string;
+    };
+    return { ok: response.ok, data };
+  }
+
+  async function onIdentify(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const ticket = flow.current;
+    setPending(true);
+    setError(null);
+    const form = new FormData(event.currentTarget);
+    const result = await post(api.auth.forgot, {
+      identifier: String(form.get("identifier") ?? ""),
+    });
+    if (ticket !== flow.current || window.location.pathname !== "/forgot-password") return;
+    setPending(false);
+    if (!result.ok) {
+      setError(result.data.message ?? "The reset request could not be sent.");
+      return;
+    }
+    showStep("otp");
+  }
+
+  async function onVerify(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const ticket = flow.current;
+    setPending(true);
+    setError(null);
+    const form = new FormData(event.currentTarget);
+    const result = await post(api.auth.verifyOtp, {
+      code: String(form.get("code") ?? ""),
+    });
+    if (ticket !== flow.current || window.location.pathname !== "/forgot-password") return;
+    setPending(false);
+    if (!result.ok) {
+      setError(result.data.message ?? "That code could not be verified.");
+      return;
+    }
+    showStep("reset");
+  }
+
+  async function onReset(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    const password = String(form.get("password") ?? "");
+    const confirm = String(form.get("confirm") ?? "");
+    const localError = passwordError(password);
+    if (localError) {
+      setError(localError);
+      return;
+    }
+    if (password !== confirm) {
+      setError("The passwords do not match.");
+      return;
+    }
+
+    setPending(true);
+    setError(null);
+    const result = await post(api.auth.reset, { password });
+    setPending(false);
+    if (!result.ok) {
+      setError(result.data.message ?? "The password could not be updated.");
+      return;
+    }
+    setDoneMessage(result.data.message ?? "Password updated.");
+    setStep("done");
+  }
+
+  if (step === "done") {
+    return (
+      <div className="mt-6">
+        <p className="text-sm text-muted">{doneMessage}</p>
+        <Link href="/login" className={`${primaryButtonClass} mt-6 w-full`}>
+          Return to sign in
+        </Link>
+      </div>
+    );
+  }
+
+  if (step === "otp") {
+    return (
+      <form onSubmit={onVerify} className="mt-6 flex flex-col gap-4">
+        <p className="rounded-xl border border-[#E6EDF5] bg-[#F8FAFC] px-3 py-3 text-sm text-[#16324F]">
+          A 6-digit code was sent to the email on this account. It expires in 10 minutes.
+        </p>
+        <div>
+          <label className={labelClass} htmlFor="reset-code">
+            Verification code
+          </label>
+          <input
+            id="reset-code"
+            name="code"
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            pattern="[0-9]{6}"
+            maxLength={6}
+            required
+            className={inputClass}
+          />
+        </div>
+        {error ? (
+          <p className={errorClass} role="alert">
+            {error}
+          </p>
+        ) : null}
+        <button type="submit" className={`${primaryButtonClass} w-full`} disabled={pending}>
+          {pending ? "Checking..." : "Verify code"}
+        </button>
+        <button
+          type="button"
+          className={secondaryButtonClass}
+          onClick={() => {
+            setError(null);
+            if (window.history.state?.forgotStep === "otp") {
+              window.history.back();
+              return;
+            }
+            setStep("identify");
+          }}
+        >
+          Use a different mobile or email
+        </button>
+      </form>
+    );
+  }
+
+  if (step === "reset") {
+    return (
+      <form onSubmit={onReset} className="mt-6 flex flex-col gap-4">
+        <div>
+          <label className={labelClass} htmlFor="reset-password">
+            New password
+          </label>
+          <input
+            id="reset-password"
+            name="password"
+            type="password"
+            required
+            autoComplete="new-password"
+            minLength={8}
+            className={inputClass}
+          />
+        </div>
+        <div>
+          <label className={labelClass} htmlFor="reset-confirm">
+            Confirm password
+          </label>
+          <input
+            id="reset-confirm"
+            name="confirm"
+            type="password"
+            required
+            autoComplete="new-password"
+            minLength={8}
+            className={inputClass}
+          />
+        </div>
+        {error ? (
+          <p className={errorClass} role="alert">
+            {error}
+          </p>
+        ) : null}
+        <button type="submit" className={`${primaryButtonClass} w-full`} disabled={pending}>
+          {pending ? "Saving..." : "Update password"}
+        </button>
+      </form>
+    );
+  }
+
+  return (
+    <form onSubmit={onIdentify} className="mt-6 flex flex-col gap-4">
+      <div>
+        <label className={labelClass} htmlFor="reset-identifier">
+          Registered mobile or email
+        </label>
+        <input
+          id="reset-identifier"
+          name="identifier"
+          type="text"
+          required
+          autoComplete="username"
+          className={inputClass}
+        />
+      </div>
+      {error ? (
+        <p className={errorClass} role="alert">
+          {error}
+        </p>
+      ) : null}
+      <button type="submit" className={`${primaryButtonClass} w-full`} disabled={pending}>
+        {pending ? "Sending..." : "Send verification code"}
+      </button>
+      <p className="text-sm text-muted">
+        Remembered it?{" "}
+        <Link href="/login" className="font-medium text-primary">
+          Sign in
+        </Link>
+      </p>
+    </form>
+  );
+}

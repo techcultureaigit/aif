@@ -1,0 +1,89 @@
+// Screens call the API in aif-back. The base URL is NEXT_PUBLIC_API_ORIGIN in .env.local.
+
+const configuredOrigin = process.env.NEXT_PUBLIC_API_ORIGIN?.trim().replace(/\/$/, "");
+
+export const apiOrigin = configuredOrigin ;
+
+function route(path) {
+  return path;
+}
+
+const TOKEN_KEY = "aif_session_token";
+
+export function saveSessionToken(token) {
+  if (typeof window === "undefined") return;
+  if (token) sessionStorage.setItem(TOKEN_KEY, token);
+  else sessionStorage.removeItem(TOKEN_KEY);
+}
+
+export function apiFetch(url, init = {}) {
+  const headers = new Headers(init.headers);
+  if (typeof window !== "undefined" && !headers.has("Authorization")) {
+    const token = sessionStorage.getItem(TOKEN_KEY);
+    if (token) headers.set("Authorization", `Bearer ${token}`);
+  }
+  return fetch(url, { credentials: "include", ...init, headers });
+}
+
+export const api = {
+  auth: {
+    login: route("/api/auth/login"),
+    accounts: route("/api/auth/accounts"),
+    logout: route("/api/auth/logout"),
+    session: route("/api/auth/session"),
+    forgot: route("/api/auth/forgot"),
+    verifyOtp: route("/api/auth/verify-otp"),
+    reset: route("/api/auth/reset"),
+  },
+  portal: {
+    summary: route("/api/portal/summary"),
+    profile: route("/api/portal/profile"),
+    holdings: route("/api/portal/holdings"),
+    ledger: route("/api/portal/ledger"),
+    statements: route("/api/portal/statements"),
+    statement(id) {
+      return route(`/api/portal/statements/${id}`);
+    },
+  },
+  admin: {
+    login: route("/api/admin/login"),
+    session: route("/api/admin/session"),
+    access: route("/api/admin/access"),
+    overview: route("/api/admin/overview"),
+    command: route("/api/admin/command"),
+    clients: route("/api/admin/clients"),
+    client(code) {
+      return route(`/api/admin/clients/${code}`);
+    },
+    clientPassword(code) {
+      return route(`/api/admin/clients/${code}/password`);
+    },
+    clientHoldingNav(code) {
+      return route(`/api/admin/clients/${code}/holdings/nav`);
+    },
+    staff: route("/api/admin/staff"),
+    staffMember(id) {
+      return route(`/api/admin/staff/${id}`);
+    },
+    roles: route("/api/admin/roles"),
+    imports: route("/api/admin/imports"),
+    holdings: route("/api/admin/holdings"),
+    ledger: route("/api/admin/ledger"),
+    reports: route("/api/admin/reports"),
+    reportFile(code, period, statementType, statementId) {
+      const params = new URLSearchParams({ period, statementType });
+      if (statementId) params.set("statementId", statementId);
+      return route(`/api/admin/reports/${encodeURIComponent(code)}/file?${params}`);
+    },
+    nav: route("/api/admin/nav"),
+    navEntry(id) {
+      return route(`/api/admin/nav/${encodeURIComponent(id)}`);
+    },
+    audit: route("/api/admin/audit"),
+    platform: route("/api/admin/platform"),
+    kraStatus: route("/api/admin/kra/status"),
+    ifsc(code) {
+      return route(`/api/admin/ifsc/${encodeURIComponent(code)}`);
+    },
+  },
+};

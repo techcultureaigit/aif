@@ -1,9 +1,0 @@
-{
-  "extends": "../aif/tsconfig.json",
-  "compilerOptions": {
-    "paths": {
-      "@/*": ["../aif/*"]
-    }
-  },
-  "include": ["../aif/**/*.ts", "../aif/**/*.tsx", "./**/*.js"]
-}

@@ -1,0 +1,313 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-primary: var(--pm-primary);
+  --color-primary-hover: var(--pm-primary-hover);
+  --color-background: var(--pm-background);
+  --color-surface: var(--pm-surface);
+  --color-foreground: var(--pm-text);
+  --color-muted: var(--pm-muted);
+  --color-border: var(--pm-border);
+  --color-danger: var(--pm-danger);
+  --color-button: var(--pm-button-bg);
+  --color-button-text: var(--pm-button-color);
+  --color-button-hover: var(--pm-button-hover);
+  --color-button-secondary: var(--pm-button-secondary-bg);
+  --color-button-secondary-text: var(--pm-button-secondary-color);
+  --color-button-secondary-border: var(--pm-button-secondary-border);
+  --color-button-secondary-hover: var(--pm-button-secondary-hover);
+  --font-sans: var(--pm-font-sans);
+  --text-xs: var(--pm-text-xs);
+  --text-xs--line-height: 1.4;
+  --text-sm: var(--pm-text-sm);
+  --text-sm--line-height: 1.45;
+  --text-base: var(--pm-text-base);
+  --text-base--line-height: 1.5;
+  --text-lg: var(--pm-text-lg);
+  --text-lg--line-height: 1.5;
+  --text-xl: var(--pm-text-xl);
+  --text-xl--line-height: 1.4;
+  --text-2xl: var(--pm-text-2xl);
+  --text-2xl--line-height: 1.3;
+  --text-3xl: var(--pm-text-3xl);
+  --text-3xl--line-height: 1.2;
+  --animate-login-rise: login-rise 0.7s ease both;
+  --animate-login-float: login-float 4.5s ease-in-out infinite;
+  --animate-login-card: login-card 0.8s ease both;
+}
+
+@keyframes login-rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes login-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes login-card {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes dash-rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes dash-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes dash-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes dash-seg {
+  from {
+    stroke-dasharray: 0 var(--ring, 264);
+  }
+}
+
+.dash-rise {
+  animation: dash-rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.dash-card {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.dash-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 34px rgba(20, 50, 90, 0.08);
+}
+
+.dash-line {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: dash-draw 1.15s cubic-bezier(0.22, 1, 0.36, 1) 0.28s both;
+}
+
+.dash-area {
+  opacity: 0;
+  animation: dash-fade 0.7s ease 0.85s both;
+}
+
+.dash-dot {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: dash-rise 0.4s ease both;
+}
+
+.dash-seg {
+  animation: dash-seg 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes dash-row {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.dash-row {
+  animation: dash-row 0.45s ease both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-login-rise,
+  .animate-login-float,
+  .animate-login-card,
+  .dash-rise,
+  .dash-line,
+  .dash-area,
+  .dash-dot,
+  .dash-seg,
+  .dash-row {
+    animation: none;
+    opacity: 1;
+    stroke-dashoffset: 0;
+  }
+
+  .dash-card:hover {
+    transform: none;
+  }
+}
+
+html,
+body,
+* {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+html {
+  color-scheme: light;
+}
+
+body {
+  background: var(--pm-background);
+  color: var(--pm-text);
+  font-family: var(--pm-font-sans), system-ui, sans-serif;
+  font-size: var(--pm-text-base);
+  overflow-x: clip;
+}
+
+img,
+svg,
+video {
+  max-width: 100%;
+}
+
+.portal-sidebar {
+  position: relative;
+  isolation: isolate;
+  background-color: #091c37;
+  color: #ffffff;
+}
+
+.portal-sidebar::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-image: url("/sidebar-bg1.png?v=2");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+.portal-sidebar::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: rgba(6, 22, 48, 0.68);
+  pointer-events: none;
+}
+
+.portal-sidebar > * {
+  position: relative;
+  z-index: 2;
+}
+
+.portal-topbar {
+  position: relative;
+  isolation: isolate;
+  background-color: #1b3c6c;
+  color: #ffffff;
+}
+
+.portal-topbar::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-image: url("/topnav-bg1.png?v=2");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  opacity: 0.62;
+  pointer-events: none;
+}
+
+.portal-topbar::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: rgba(12, 36, 72, 0.46);
+  pointer-events: none;
+}
+
+.portal-topbar > * {
+  position: relative;
+  z-index: 2;
+}
+
+input[type="checkbox"] {
+  appearance: none;
+  width: 1rem;
+  height: 1rem;
+  margin: 0;
+  flex-shrink: 0;
+  border: 1.5px solid #d5dde6;
+  border-radius: 0.25rem;
+  background-color: #ffffff;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 0.75rem 0.75rem;
+  vertical-align: middle;
+  cursor: pointer;
+}
+
+input[type="checkbox"]:checked {
+  border-color: #f97316;
+  background-color: #f97316;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%23ffffff' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round' d='M3.2 8.2 6.4 11.2 12.8 4.6'/%3E%3C/svg%3E");
+}
+
+input[type="checkbox"]:focus-visible {
+  outline: 2px solid #f97316;
+  outline-offset: 2px;
+}
+
+input[type="checkbox"]:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+select:-webkit-autofill {
+  -webkit-text-fill-color: var(--pm-text);
+  caret-color: var(--pm-text);
+  box-shadow: 0 0 0 1000px #f8fafc inset;
+  transition: background-color 9999s ease-out;
+}
