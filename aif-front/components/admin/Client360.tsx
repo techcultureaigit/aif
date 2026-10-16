@@ -382,7 +382,7 @@ export default function Client360({ code }: { code: string }) {
 
           {tab === "Profile" ? (
             <form onSubmit={resetPassword} className={`${cardClass} p-5`}>
-              <SectionHeading icon={<KeyIcon />} title="Reset password" subtitle="Set a new sign-in password for this investor." />
+              <SectionHeading icon={<KeyIcon />} title="Reset password" subtitle="Set a new sign-in password. The investor is emailed the user ID and new password." />
               <div className="mt-5 grid gap-4 md:grid-cols-2">
                 <label className="text-sm">
                   <FieldLabel>New password</FieldLabel>

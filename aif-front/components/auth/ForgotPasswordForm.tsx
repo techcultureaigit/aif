@@ -1,7 +1,6 @@
 "use client";
 
 import { FormEvent, useEffect, useRef, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   errorClass,
@@ -20,7 +19,13 @@ function readStep(value: unknown): Step {
   return value === "otp" || value === "reset" || value === "done" ? value : "identify";
 }
 
-export default function ForgotPasswordForm() {
+export default function ForgotPasswordForm({
+  embedded = false,
+  onSignIn,
+}: {
+  embedded?: boolean;
+  onSignIn?: () => void;
+}) {
   const { user, ready } = useApp();
   const router = useRouter();
   const [step, setStep] = useState<Step>("identify");
@@ -30,9 +35,19 @@ export default function ForgotPasswordForm() {
   const flow = useRef(0);
 
   function showStep(next: Step) {
-    window.history.pushState({ forgotStep: next }, "");
+    if (!embedded) {
+      window.history.pushState({ forgotStep: next }, "");
+    }
     setStep(next);
     setError(null);
+  }
+
+  function goSignIn() {
+    if (onSignIn) {
+      onSignIn();
+      return;
+    }
+    window.location.assign("/?login=1");
   }
 
   useEffect(() => {
@@ -42,6 +57,12 @@ export default function ForgotPasswordForm() {
   }, [ready, user, router]);
 
   useEffect(() => {
+    if (embedded) {
+      return () => {
+        flow.current += 1;
+      };
+    }
+
     if (window.history.state?.forgotStep == null) {
       window.history.replaceState({ forgotStep: "identify" }, "");
     } else {
@@ -60,7 +81,7 @@ export default function ForgotPasswordForm() {
       flow.current += 1;
       window.removeEventListener("popstate", onPop);
     };
-  }, []);
+  }, [embedded]);
 
   async function post(url: string, body: object) {
     const response = await apiFetch(url, {
@@ -83,7 +104,7 @@ export default function ForgotPasswordForm() {
     const result = await post(api.auth.forgot, {
       identifier: String(form.get("identifier") ?? ""),
     });
-    if (ticket !== flow.current || window.location.pathname !== "/forgot-password") return;
+    if (ticket !== flow.current) return;
     setPending(false);
     if (!result.ok) {
       setError(result.data.message ?? "The reset request could not be sent.");
@@ -101,7 +122,7 @@ export default function ForgotPasswordForm() {
     const result = await post(api.auth.verifyOtp, {
       code: String(form.get("code") ?? ""),
     });
-    if (ticket !== flow.current || window.location.pathname !== "/forgot-password") return;
+    if (ticket !== flow.current) return;
     setPending(false);
     if (!result.ok) {
       setError(result.data.message ?? "That code could not be verified.");
@@ -141,9 +162,9 @@ export default function ForgotPasswordForm() {
     return (
       <div className="mt-6">
         <p className="text-sm text-muted">{doneMessage}</p>
-        <Link href="/login" className={`${primaryButtonClass} mt-6 w-full`}>
+        <button type="button" onClick={goSignIn} className={`${primaryButtonClass} mt-6 w-full`}>
           Return to sign in
-        </Link>
+        </button>
       </div>
     );
   }
@@ -182,7 +203,7 @@ export default function ForgotPasswordForm() {
           className={secondaryButtonClass}
           onClick={() => {
             setError(null);
-            if (window.history.state?.forgotStep === "otp") {
+            if (!embedded && window.history.state?.forgotStep === "otp") {
               window.history.back();
               return;
             }
@@ -263,9 +284,9 @@ export default function ForgotPasswordForm() {
       </button>
       <p className="text-sm text-muted">
         Remembered it?{" "}
-        <Link href="/login" className="font-medium text-primary">
+        <button type="button" onClick={goSignIn} className="font-medium text-primary hover:underline">
           Sign in
-        </Link>
+        </button>
       </p>
     </form>
   );

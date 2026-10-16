@@ -133,7 +133,7 @@ function shell(statementTitle: string, pageLabel: string): PdfOp[] {
     text(pageLabel, 571, 790, 8, pale, { align: "right" }),
     { kind: "rect", x: 0, y: 0, w: 595, h: 52, fill: navy },
     ...pin(36, 26, white, navy),
-    text("Express Tower, Sector 62, Noida, UP 201301", 50, 22, 8, white),
+    text("1206, 12th Floor, Kailash Building K.G. Marg. Connaught Place, Delhi, 110001", 50, 22, 8, white),
     { kind: "rect", x: 338, y: 14, w: 0.8, h: 24, fill: pale },
     ...mail(358, 34, white, navy),
     text("info@wealthdiscovery.in", 372, 30, 8, white),

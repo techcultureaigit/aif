@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import LoginTrigger from "@/components/auth/LoginTrigger";
 import Logo, { type BrandDisplay } from "@/components/layout/Logo";
 import { primaryButtonClass } from "@/components/ui/classes";
 import { useApp } from "@/context/AppProvider";
 
-const links = [{ href: "/", label: "Home" }];
+const links = [{ href: "https://www.wealthdiscovery.in/", label: "Home", external: true }] as const;
 
 function linkClass(active: boolean) {
   return active
@@ -31,6 +32,23 @@ export default function Navbar({
         </Link>
         <nav className="flex flex-wrap items-center gap-5">
           {links.map((link) => {
+            const className = onHome
+              ? "inline-flex items-center gap-1.5 rounded-full bg-white/90 px-3.5 py-2 text-sm font-semibold text-[#1B3C6C] shadow-[0_4px_16px_rgba(8,24,56,0.18)]"
+              : linkClass(false);
+            if (link.external) {
+              return (
+                <a
+                  key={link.href}
+                  href={link.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={className}
+                >
+                  {onHome ? <HouseIcon /> : null}
+                  {link.label}
+                </a>
+              );
+            }
             const active = pathname === link.href;
             return (
               <Link
@@ -38,9 +56,7 @@ export default function Navbar({
                 href={link.href}
                 className={
                   onHome
-                    ? `inline-flex items-center gap-1.5 rounded-full bg-white/90 px-3.5 py-2 text-sm font-semibold text-[#1B3C6C] shadow-[0_4px_16px_rgba(8,24,56,0.18)] ${
-                        active ? "underline decoration-2 underline-offset-[6px] decoration-[#2E5FA5]" : ""
-                      }`
+                    ? `${className}${active ? " underline decoration-2 underline-offset-[6px] decoration-[#2E5FA5]" : ""}`
                     : linkClass(active)
                 }
                 aria-current={active ? "page" : undefined}
@@ -58,10 +74,10 @@ export default function Navbar({
               Portal
             </Link>
           ) : (
-            <Link href="/login" className={onHome ? homeLoginClass : primaryButtonClass}>
+            <LoginTrigger className={onHome ? homeLoginClass : primaryButtonClass}>
               {onHome ? <UserIcon /> : null}
               Log in
-            </Link>
+            </LoginTrigger>
           )}
         </nav>
       </div>

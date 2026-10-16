@@ -251,7 +251,7 @@ export default function ClientForm() {
       return;
     }
     if (data.mailed === false) {
-      setFormError(data.mailMessage ?? "The client was created, but the founder email could not be sent.");
+      setFormError(data.mailMessage ?? "The client was created, but the investor email could not be sent.");
       setCreatedCode(data.code);
       return;
     }
@@ -525,7 +525,7 @@ export default function ClientForm() {
         <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
           <p className="flex items-center gap-2 text-xs text-[#7B8794]">
             <InfoIcon />
-            The investor can sign in with password 123456. The founder is emailed that email and password.
+            The investor can sign in with password 123456. Those credentials are emailed to the investor automatically.
           </p>
           <div className="flex items-center gap-3">
             <button type="button" onClick={resetForm} className="rounded-full border border-[#D5DDE6] bg-white px-5 py-2.5 text-sm font-medium text-[#1B3C6C] hover:bg-[#F8FAFC]">

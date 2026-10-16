@@ -41,6 +41,7 @@ import {
 import { authorizeAdmin } from "../lib/admin-guard.js";
 import { openAdminSession, readAdminSession } from "../lib/session.js";
 import { readCreateClientBody } from "../lib/client-validation.js";
+import { sendPasswordChangedMail } from "../lib/mail.js";
 import { passwordError } from "../lib/password.js";
 import { kraStatus } from "../lib/kra.js";
 import { getPortal, listHoldingRows, listLedgerRows, listSecurities, updatePassword } from "../lib/portal-store.js";
@@ -279,7 +280,23 @@ export async function resetClientPassword(code, body) {
     targetEntity: "investor",
     entityId: code,
   });
-  return ok({ message: "Password updated. The investor can sign in with the new password." });
+  const mailed = await sendPasswordChangedMail({
+    investorName: portal.profile.fullName,
+    tradingCode: portal.profile.tradingCode,
+    email: portal.profile.email,
+    password,
+  });
+  if (!mailed.ok) {
+    return ok({
+      message: "Password updated, but the investor email could not be sent.",
+      mailed: false,
+      mailMessage: mailed.error,
+    });
+  }
+  return ok({
+    message: "Password updated. The new credentials were emailed to the investor.",
+    mailed: true,
+  });
 }
 
 export async function staff() {

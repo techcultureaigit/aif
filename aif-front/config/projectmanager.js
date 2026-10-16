@@ -96,7 +96,7 @@ export const projectManager = {
   },
   company: {
     name: "AIF Client Portal",
-    address: "Express Tower, Sector 62\nNoida, UP 201301",
+    address: "1206, 12th Floor, Kailash Building\nK.G. Marg, Connaught Place, Delhi, 110001",
     email: "info@wealthdiscovery.in",
     phone: "91 11 4344 4666",
   },

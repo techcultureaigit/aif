@@ -24,8 +24,8 @@ const items = [
   },
   {
     title: "Office",
-    text: "Express Tower, Sector 62",
-    detail: "Noida, UP 201301",
+    text: "1206, 12th Floor, Kailash Building",
+    detail: "K.G. Marg, Connaught Place, Delhi, 110001",
     icon: (
       <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
         <path d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11z" strokeLinejoin="round" />

@@ -1,7 +1,6 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   errorClass,
@@ -10,7 +9,7 @@ import {
 } from "@/components/ui/classes";
 import { useApp } from "@/context/AppProvider";
 
-export default function LoginForm() {
+export default function LoginForm({ onForgotPassword }: { onForgotPassword?: () => void }) {
   const { login, user, ready } = useApp();
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
@@ -64,9 +63,19 @@ export default function LoginForm() {
           <label className="text-sm font-medium" htmlFor="login-password">
             Password
           </label>
-          <Link href="/forgot-password" className="text-sm font-medium text-[#2456c8] hover:underline">
+          <button
+            type="button"
+            className="text-sm font-medium text-[#2456c8] hover:underline"
+            onClick={() => {
+              if (onForgotPassword) {
+                onForgotPassword();
+                return;
+              }
+              window.location.assign("/?forgot=1");
+            }}
+          >
             Forgot password
-          </Link>
+          </button>
         </div>
         <span className={fieldClass}>
           <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0 text-[#2456c8]" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">

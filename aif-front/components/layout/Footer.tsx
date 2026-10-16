@@ -1,14 +1,21 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
+import LoginTrigger from "@/components/auth/LoginTrigger";
 import { brandDisplay } from "@/components/layout/Logo";
 import { projectManager } from "@/config/projectmanager";
 import { footerLogoSrc } from "@/lib/footer-logo";
 
 const quickLinks = [
-  { href: "/", label: "Home", icon: "home" },
-  { href: "/login", label: "Sign in", icon: "user" },
+  { href: "https://www.wealthdiscovery.in/", label: "Home", icon: "home", external: true },
+  { href: "/?login=1", label: "Sign in", icon: "user", login: true },
   { href: "/privacy", label: "Privacy Policy", icon: "shield" },
   { href: "/terms", label: "Terms & Conditions", icon: "file" },
+] as const;
+
+const socialLinks = [
+  { label: "Facebook", href: "https://www.facebook.com/WealthDiscoveryBroker/", icon: "facebook" },
+  { label: "X", href: "https://x.com/wealth_security", icon: "x" },
+  { label: "LinkedIn", href: "https://www.linkedin.com/company/wealth-discovery", icon: "linkedin" },
 ] as const;
 
 const portfolioLinks = [
@@ -58,24 +65,25 @@ export default async function Footer() {
               Your trusted partner in wealth management. Secure. Transparent. Always with you.
             </p>
             <div className="footer-social mt-5 flex gap-2.5">
-              <Social label="LinkedIn">
-                <LinkedInIcon />
-              </Social>
-              <Social label="X">
-                <XIcon />
-              </Social>
-              <Social label="YouTube">
-                <YouTubeIcon />
-              </Social>
-              <Social label="Instagram">
-                <InstagramIcon />
-              </Social>
+              {socialLinks.map((item) => (
+                <Social key={item.label} label={item.label} href={item.href}>
+                  {item.icon === "facebook" ? <FacebookIcon /> : null}
+                  {item.icon === "x" ? <XIcon /> : null}
+                  {item.icon === "linkedin" ? <LinkedInIcon /> : null}
+                </Social>
+              ))}
             </div>
           </div>
 
           <FooterColumn title="Quick links">
             {quickLinks.map((link) => (
-              <FooterLink key={link.label} href={link.href} icon={link.icon}>
+              <FooterLink
+                key={link.label}
+                href={link.href}
+                icon={link.icon}
+                login={"login" in link && link.login}
+                external={"external" in link && link.external}
+              >
                 {link.label}
               </FooterLink>
             ))}
@@ -90,7 +98,7 @@ export default async function Footer() {
           </FooterColumn>
 
           <FooterColumn title="Contact">
-            <p className="text-sm font-medium text-white">Wealth Discovery Capital</p>
+            <p className="text-sm font-medium text-white">Wealth Discovery Group</p>
             <ContactRow icon="pin">{company.address}</ContactRow>
             <ContactRow icon="phone" href={`tel:${company.phone}`}>
               {company.phone}
@@ -103,19 +111,31 @@ export default async function Footer() {
         </div>
 
         <div className="footer-bar relative flex flex-col gap-3 border-t border-white/15 px-6 py-4 text-xs text-white/75 sm:flex-row sm:items-center sm:justify-between sm:px-8 lg:px-10">
-          <p>© {year} Wealth Discovery Capital. All rights reserved.</p>
+       
+          <p>© {year} Wealth Discovery Group. All rights reserved.</p>
+          <p>Wealth Discovery Alternative Assets Private Limited </p>
+      
           <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-            <span className="inline-flex items-center gap-1.5 text-[#3ddc97]">
-              <ShieldIcon />
-              Your data is safe with us
-            </span>
+            <span>CIN: U66309DL2023PTC422540</span>
             <Dot />
             <span>SEBI Registered</span>
             <Dot />
             <span>ISO 27001 Certified</span>
             <Dot />
-            <a href="https://techculture.ai/" target="_blank" rel="noreferrer" className="hover:text-white">
-              Powered by TechCulture
+            <a
+              href="https://techculture.ai/"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1.5 hover:text-white"
+            >
+              <img
+                src="/techculture-ai.png"
+                alt=""
+                width={16}
+                height={16}
+                className="h-4 w-4 object-contain"
+              />
+              Powered by TechCulture ai
             </a>
           </div>
         </div>
@@ -138,13 +158,34 @@ function FooterLink({
   href,
   icon,
   children,
+  login = false,
+  external = false,
 }: {
   href: string;
   icon: string;
   children: ReactNode;
+  login?: boolean;
+  external?: boolean;
 }) {
+  const className = "inline-flex items-center gap-2.5 text-sm text-white/85 hover:text-white";
+  if (login) {
+    return (
+      <LoginTrigger href={href} className={className}>
+        <RowIcon name={icon} />
+        {children}
+      </LoginTrigger>
+    );
+  }
+  if (external) {
+    return (
+      <a href={href} target="_blank" rel="noopener noreferrer" className={className}>
+        <RowIcon name={icon} />
+        {children}
+      </a>
+    );
+  }
   return (
-    <Link href={href} className="inline-flex items-center gap-2.5 text-sm text-white/85 hover:text-white">
+    <Link href={href} className={className}>
       <RowIcon name={icon} />
       {children}
     </Link>
@@ -181,10 +222,12 @@ function ContactRow({
   return <p className={className}>{body}</p>;
 }
 
-function Social({ label, children }: { label: string; children: ReactNode }) {
+function Social({ label, href, children }: { label: string; href: string; children: ReactNode }) {
   return (
     <a
-      href={`#${label.toLowerCase()}`}
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
       aria-label={label}
       className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/35 text-white/90 hover:border-white hover:text-white"
     >
@@ -312,20 +355,10 @@ function XIcon() {
   );
 }
 
-function YouTubeIcon() {
+function FacebookIcon() {
   return (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <path d="M22 12.2s0-3.2-.4-4.6c-.2-.9-.9-1.6-1.8-1.8C18.2 5.4 12 5.4 12 5.4s-6.2 0-7.8.4c-.9.2-1.6.9-1.8 1.8C2 9 2 12.2 2 12.2s0 3.2.4 4.6c.2.9.9 1.6 1.8 1.8 1.6.4 7.8.4 7.8.4s6.2 0 7.8-.4c.9-.2 1.6-.9 1.8-1.8.4-1.4.4-4.6.4-4.6ZM10 15.5v-6.6l5.2 3.3-5.2 3.3Z" />
-    </svg>
-  );
-}
-
-function InstagramIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <rect x="4" y="4" width="16" height="16" rx="4" stroke="currentColor" strokeWidth="1.8" />
-      <circle cx="12" cy="12" r="3.4" stroke="currentColor" strokeWidth="1.8" />
-      <circle cx="17.2" cy="6.8" r="0.9" fill="currentColor" />
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M14.5 8.5V6.8c0-.7.5-1.3 1.2-1.3H18V3h-2.3C13.2 3 11.5 4.7 11.5 6.8v1.7H9.5V11h2v9h3v-9h2.3l.7-2.5h-3Z" />
     </svg>
   );
 }

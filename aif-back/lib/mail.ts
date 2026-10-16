@@ -3,8 +3,6 @@ import { createTransport } from "nodemailer";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const founderEmail = () => process.env.FOUNDER_EMAIL?.trim() || "info@wealthdiscovery.in";
-
 function escapeHtml(value: string) {
   return value
     .replace(/&/g, "&amp;")
@@ -43,8 +41,8 @@ function fromAddress() {
 function layout(body: string) {
   const logo = logoPath();
   const image = logo
-    ? `<img src="cid:company-logo" width="220" alt="Wealth Discovery Capital" style="display:block;border:0;height:auto;max-width:220px;" />`
-    : `<p style="margin:0;font-family:Segoe UI,Arial,sans-serif;font-size:18px;font-weight:700;color:#1B3C6C;">Wealth Discovery Capital</p>`;
+    ? `<img src="cid:company-logo" width="220" alt="Wealth Discovery Group" style="display:block;border:0;height:auto;max-width:220px;" />`
+    : `<p style="margin:0;font-family:Segoe UI,Arial,sans-serif;font-size:18px;font-weight:700;color:#1B3C6C;">Wealth Discovery Group</p>`;
   return `<!DOCTYPE html>
 <html>
 <body style="margin:0;padding:0;background:#F4F7FB;">
@@ -61,8 +59,8 @@ function layout(body: string) {
           </tr>
           <tr>
             <td style="padding:16px 32px 22px;background:#F8FAFC;border-top:1px solid #E6EDF5;font-family:Segoe UI,Arial,sans-serif;font-size:12px;line-height:1.7;color:#7B8794;text-align:center;">
-              Wealth Discovery Capital<br />
-              Express Tower, Sector 62, Noida, UP 201301<br />
+              Wealth Discovery Group<br />
+              1206, 12th Floor, Kailash Building K.G. Marg. Connaught Place, Delhi, 110001<br />
               info@wealthdiscovery.in · 91 11 4344 4666
             </td>
           </tr>
@@ -82,7 +80,7 @@ async function deliver(input: { to: string; subject: string; html: string; text:
   const logo = logoPath();
   try {
     await mailer.sendMail({
-      from: `"Wealth Discovery Capital" <${fromAddress()}>`,
+      from: `"Wealth Discovery Group" <${fromAddress()}>`,
       to: input.to,
       subject: input.subject,
       text: input.text,
@@ -110,30 +108,76 @@ export async function sendAccountCreatedMail(input: {
   const email = escapeHtml(input.email);
   const password = escapeHtml(input.password);
   const html = layout(`
-    <h1 style="margin:0 0 8px;font-size:22px;line-height:1.3;color:#1B3C6C;">Account created successfully</h1>
-    <p style="margin:0 0 18px;color:#16324F;">A new investor account is ready on the AIF Client Portal.</p>
+    <h1 style="margin:0 0 8px;font-size:22px;line-height:1.3;color:#1B3C6C;">Your account is ready</h1>
+    <p style="margin:0 0 18px;color:#16324F;">Hello ${name}, your AIF Client Portal account has been created. Use the details below to sign in.</p>
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F8FAFC;border:1px solid #E6EDF5;border-radius:12px;">
-      <tr><td style="padding:14px 16px;font-size:13px;color:#7B8794;">Investor</td><td style="padding:14px 16px;font-size:14px;font-weight:600;color:#16324F;">${name}</td></tr>
-      <tr><td style="padding:0 16px 14px;font-size:13px;color:#7B8794;">AIF code</td><td style="padding:0 16px 14px;font-size:14px;font-weight:600;color:#16324F;">${code}</td></tr>
-      <tr><td style="padding:0 16px 14px;font-size:13px;color:#7B8794;">Email</td><td style="padding:0 16px 14px;font-size:14px;font-weight:600;color:#16324F;">${email}</td></tr>
+      <tr><td style="padding:14px 16px;font-size:13px;color:#7B8794;">AIF code</td><td style="padding:14px 16px;font-size:14px;font-weight:600;color:#16324F;">${code}</td></tr>
+      <tr><td style="padding:0 16px 14px;font-size:13px;color:#7B8794;">User ID (email)</td><td style="padding:0 16px 14px;font-size:14px;font-weight:600;color:#16324F;">${email}</td></tr>
       <tr><td style="padding:0 16px 16px;font-size:13px;color:#7B8794;">Password</td><td style="padding:0 16px 16px;font-size:14px;font-weight:600;letter-spacing:0.04em;color:#1B3C6C;">${password}</td></tr>
     </table>
-    <p style="margin:16px 0 0;font-size:13px;color:#7B8794;">The investor signs in with this email and password.</p>
+    <p style="margin:16px 0 0;font-size:13px;color:#7B8794;">Sign in with this email and password. For security, change your password after the first sign-in.</p>
   `);
   const text = [
-    "Account created successfully",
+    "Your account is ready",
     "",
-    `Investor: ${input.investorName}`,
+    `Hello ${input.investorName},`,
+    "Your AIF Client Portal account has been created.",
+    "",
     `AIF code: ${input.tradingCode}`,
-    `Email: ${input.email}`,
+    `User ID (email): ${input.email}`,
     `Password: ${input.password}`,
     "",
-    "Wealth Discovery Capital",
-    "Express Tower, Sector 62, Noida, UP 201301",
+    "Sign in with this email and password. For security, change your password after the first sign-in.",
+    "",
+    "Wealth Discovery Group",
+    "1206, 12th Floor, Kailash Building K.G. Marg. Connaught Place, Delhi, 110001",
   ].join("\n");
   return deliver({
-    to: founderEmail(),
-    subject: `Account created — ${input.investorName}`,
+    to: input.email,
+    subject: "Your AIF Client Portal account credentials",
+    html,
+    text,
+  });
+}
+
+export async function sendPasswordChangedMail(input: {
+  investorName: string;
+  tradingCode: string;
+  email: string;
+  password: string;
+}) {
+  const name = escapeHtml(input.investorName);
+  const code = escapeHtml(input.tradingCode);
+  const email = escapeHtml(input.email);
+  const password = escapeHtml(input.password);
+  const html = layout(`
+    <h1 style="margin:0 0 8px;font-size:22px;line-height:1.3;color:#1B3C6C;">Your password was updated</h1>
+    <p style="margin:0 0 18px;color:#16324F;">Hello ${name}, an administrator updated your AIF Client Portal password. Use the details below to sign in.</p>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F8FAFC;border:1px solid #E6EDF5;border-radius:12px;">
+      <tr><td style="padding:14px 16px;font-size:13px;color:#7B8794;">AIF code</td><td style="padding:14px 16px;font-size:14px;font-weight:600;color:#16324F;">${code}</td></tr>
+      <tr><td style="padding:0 16px 14px;font-size:13px;color:#7B8794;">User ID (email)</td><td style="padding:0 16px 14px;font-size:14px;font-weight:600;color:#16324F;">${email}</td></tr>
+      <tr><td style="padding:0 16px 16px;font-size:13px;color:#7B8794;">New password</td><td style="padding:0 16px 16px;font-size:14px;font-weight:600;letter-spacing:0.04em;color:#1B3C6C;">${password}</td></tr>
+    </table>
+    <p style="margin:16px 0 0;font-size:13px;color:#7B8794;">If you did not expect this change, contact Wealth Discovery Group immediately.</p>
+  `);
+  const text = [
+    "Your password was updated",
+    "",
+    `Hello ${input.investorName},`,
+    "An administrator updated your AIF Client Portal password.",
+    "",
+    `AIF code: ${input.tradingCode}`,
+    `User ID (email): ${input.email}`,
+    `New password: ${input.password}`,
+    "",
+    "If you did not expect this change, contact Wealth Discovery Group immediately.",
+    "",
+    "Wealth Discovery Group",
+    "1206, 12th Floor, Kailash Building K.G. Marg. Connaught Place, Delhi, 110001",
+  ].join("\n");
+  return deliver({
+    to: input.email,
+    subject: "Your AIF Client Portal password was updated",
     html,
     text,
   });
@@ -154,7 +198,7 @@ export async function sendPasswordOtpMail(input: { to: string; name: string; cod
     `Your AIF Client Portal password reset code is ${input.code}.`,
     "This code expires in 10 minutes.",
     "",
-    "Wealth Discovery Capital",
+    "Wealth Discovery Group",
   ].join("\n");
   return deliver({
     to: input.to,
