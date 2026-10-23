@@ -1,7 +1,7 @@
 import dns from "node:dns";
 import { MongoClient } from "mongodb";
 
-const databaseName = process.env.MONGODB_DB || "aif_wealthdiscovery";
+const databaseName = process.env.MONGODB_DB || "aif_wealthdiscovery"; 
 
 const globalStore = globalThis;
 
